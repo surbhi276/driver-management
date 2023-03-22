@@ -1,0 +1,11 @@
+{
+  "extends": "@moia-oss/eslint-prettier-typescript-config",
+  "compilerOptions": {
+    "outDir": "./build",
+    "rootDir": "./",
+    "incremental": false,
+    "allowJs": true
+  },
+  "esModuleInterop": true,
+  "include": ["./src", "./cdk"]
+}
