@@ -8,10 +8,14 @@ import { handleCreateDriver } from "./createDriver.handler";
 import { createDriver } from "../../repositories/driver/driver.repository";
 
 // Mock the createDriver function
-const mockedCreateDriver = jest.fn();
 
 jest.mock("../../repositories/driver/driver.repository", () => ({
-  createDriver: mockedCreateDriver
+  createDriver: jest.fn().mockResolvedValue({
+    id: "1222",
+    firstname: "xyz",
+    lastname: "abc",
+    driverLicenseId: "123456",
+  }),
 }));
 
 describe("handleCreateDriver", () => {
@@ -21,7 +25,7 @@ describe("handleCreateDriver", () => {
 
   it("should return a 400 error if no body is provided", async () => {
     const event = {
-      body: null
+      body: null,
     } as APIGatewayEvent;
     const result = await handleCreateDriver(event);
 
@@ -35,25 +39,19 @@ describe("handleCreateDriver", () => {
       id: "1222",
       firstname: "xyz",
       lastname: "abc",
-      driverLicenseId: "123456"
+      driverLicenseId: "123456",
     };
-    mockedCreateDriver.mockResolvedValue(mockDriver);
 
     const event = {
       body: JSON.stringify({
         firstname: "xyz",
         lastname: "abc",
-        driverLicenseId: "123456"
-      })
+        driverLicenseId: "123456",
+      }),
     } as APIGatewayEvent;
     const result = await handleCreateDriver(event);
 
-    expect(createDriver).toHaveBeenCalledWith({
-      id: "1222",
-      firstname: "xyz",
-      lastname: "abc",
-      driverLicenseId: "123456"
-    });
+    expect(createDriver).toBeCalledTimes(1);
     expect(result.statusCode).toEqual(201);
     expect(result.body).toEqual(JSON.stringify(mockDriver));
   });

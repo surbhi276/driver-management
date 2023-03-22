@@ -1,22 +1,22 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { DynamoDB } from "aws-sdk";
-
+import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TIPS_TABLE_NAME } from "../../config";
 import type { DriverTotalTips } from "../../models/drivertips";
 import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
 
-const dynamo = new DynamoDB.DocumentClient();
+const dynamoDbInstance = DynamoDBClient.getInstance();
+const dynamodbClient = dynamoDbInstance.getClient();
 
 export const getDriverTips = async (
   driverIdParam: string
 ): Promise<DriverTotalTips> => {
   try {
-    const driverTipsData = await dynamo
+    const driverTipsData = await dynamodbClient
       .get({
         TableName: DRIVER_TIPS_TABLE_NAME,
         Key: {
-          driverIdParam
-        }
+          driverIdParam,
+        },
       })
       .promise();
 
@@ -31,7 +31,7 @@ export const getDriverTips = async (
     return {
       driverId,
       todayTips: todayTips || 0,
-      weeklyTips: weeklyTips || 0
+      weeklyTips: weeklyTips || 0,
     };
   } catch (err) {
     console.error(
@@ -60,7 +60,7 @@ export const storeDriverTip = async (
       TableName: DRIVER_TIPS_TABLE_NAME,
       Key: { driverId },
       UpdateExpression: "ADD",
-      ExpressionAttributeValues: {}
+      ExpressionAttributeValues: {},
     };
 
     // If the event is from today, add the tip to dailyTips
@@ -68,7 +68,7 @@ export const storeDriverTip = async (
       updateParams.UpdateExpression += " todayTips :todayAmount";
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
-        ":todayAmount": Number(amount)
+        ":todayAmount": Number(amount),
       };
     }
 
@@ -77,11 +77,11 @@ export const storeDriverTip = async (
       updateParams.UpdateExpression += ", weeklyTips :weeklyAmount";
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
-        ":weeklyAmount": Number(amount)
+        ":weeklyAmount": Number(amount),
       };
     }
 
-    await dynamo.update(updateParams).promise();
+    await dynamodbClient.update(updateParams).promise();
   } catch (err) {
     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     console.error(`Failed to update tip for driver ${driverId}: ${err}`);

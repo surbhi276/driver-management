@@ -1,23 +1,24 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { DynamoDB } from "aws-sdk";
-
+import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TABLE_NAME } from "../../config";
 import type { Driver } from "../../models/driver";
 
-const dynamo = new DynamoDB.DocumentClient();
+const dynamoDbInstance = DynamoDBClient.getInstance();
+console.log(dynamoDbInstance, "lll");
+const dynamodbClient = dynamoDbInstance.getClient();
 
 export const createDriver = async (driver: Driver): Promise<Driver> => {
   const { id, firstname, lastname, driverLicenseId } = driver;
 
-  await dynamo
+  await dynamodbClient
     .put({
       TableName: DRIVER_TABLE_NAME,
       Item: {
         id,
         firstname,
         lastname,
-        driverLicenseId
-      }
+        driverLicenseId,
+      },
     })
     .promise();
 
@@ -25,15 +26,16 @@ export const createDriver = async (driver: Driver): Promise<Driver> => {
 };
 
 export const getDriver = async (driverId: string): Promise<Driver | null> => {
-  const { Item } = await dynamo
+  const { Item } = await dynamodbClient
     .get({
       TableName: DRIVER_TABLE_NAME,
       Key: {
-        id: driverId
-      }
+        id: driverId,
+      },
     })
     .promise();
-
+  console.log(Item, "ppp");
+  console.log(Item, "ppp");
   if (!Item) {
     return null;
   }
@@ -44,14 +46,14 @@ export const getDriver = async (driverId: string): Promise<Driver | null> => {
     id,
     firstname,
     lastname,
-    driverLicenseId
+    driverLicenseId,
   };
 };
 
 export const getDrivers = async (): Promise<Driver[]> => {
-  const { Items } = await dynamo
+  const { Items } = await dynamodbClient
     .scan({
-      TableName: DRIVER_TABLE_NAME
+      TableName: DRIVER_TABLE_NAME,
     })
     .promise();
 
@@ -60,7 +62,7 @@ export const getDrivers = async (): Promise<Driver[]> => {
         id: item.id,
         firstname: item.firstname,
         lastname: item.lastname,
-        driverLicenseId: item.driverLicenseId
+        driverLicenseId: item.driverLicenseId,
       }))
     : [];
 };
