@@ -8,7 +8,7 @@ import {
   storeDriverTip,
 } from "./driverTips.repository";
 
-import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import type { DriverTipEvent } from "../../models/driverTips";
 
 jest.mock("aws-sdk", () => {
   const mDynamoDB = {

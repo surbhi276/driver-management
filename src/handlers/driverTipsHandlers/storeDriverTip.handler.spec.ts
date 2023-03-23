@@ -1,10 +1,10 @@
-import type { SQSEvent } from "aws-lambda";
+import type { APIGatewayProxyResult, SQSEvent } from "aws-lambda";
 
-import type { DriverTotalTips } from "../../models/driverTotalTips";
+import type { DriverTotalTips } from "../../models/driverTips";
 
 import { handleStoreDriverTip } from "./storeDriverTip.handler";
 
-import { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { DriverTipEvent } from "../../models/driverTips";
 import {
   getDriverTips,
   resetDriverTip,
@@ -31,21 +31,76 @@ describe("handleStoreDriverTip", () => {
     // Clear all mock calls before each test
     jest.clearAllMocks();
   });
+
+  it("should return a 400 response when driverId is not correct", async () => {
+    const event = {
+      Records: [
+        {
+          body: JSON.stringify({
+            driverId: "abcd",
+            amount: "12",
+            eventTime: "2019-09-16T10:58:14.651Z",
+          } as DriverTipEvent),
+        },
+      ],
+    } as SQSEvent;
+
+    const result = await handleStoreDriverTip(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("should return a 400 response when amount is not correct", async () => {
+    const event = {
+      Records: [
+        {
+          body: JSON.stringify({
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
+            amount: "Nan",
+            eventTime: "2019-09-16T10:58:14.651Z",
+          } as DriverTipEvent),
+        },
+      ],
+    } as SQSEvent;
+
+    const result = await handleStoreDriverTip(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("should return a 400 response when eventTime is not correct", async () => {
+    const event = {
+      Records: [
+        {
+          body: JSON.stringify({
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
+            amount: "13",
+            eventTime: "2019/09/16",
+          } as DriverTipEvent),
+        },
+      ],
+    } as SQSEvent;
+
+    const result = await handleStoreDriverTip(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
   it("should store driver tips for each record in the event", async () => {
     const event = {
       Records: [
         {
           body: JSON.stringify({
-            driverId: "1234",
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "02-02-2012",
+            eventTime: "2019-09-16T10:58:14.651Z",
           } as DriverTipEvent),
         },
         {
           body: JSON.stringify({
-            driverId: "1237",
-            amount: "14",
-            eventTime: "02-02-2012",
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
+            amount: "12",
+            eventTime: "2019-09-16T10:58:14.651Z",
           } as DriverTipEvent),
         },
       ],
@@ -60,16 +115,22 @@ describe("handleStoreDriverTip", () => {
       Records: [
         {
           body: JSON.stringify({
-            driverId: "1234",
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "02-02-2012",
+            eventTime: "2019-09-16T10:58:14.651Z",
           } as DriverTipEvent),
         },
       ],
     } as SQSEvent;
+
+    const expectedResponse: APIGatewayProxyResult = {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Driver tips get stored successfully" }),
+    };
     const result = await handleStoreDriverTip(event);
+    console.log(result);
     expect(result.statusCode).toEqual(201);
-    expect(result.body).toEqual("Driver tips get stored successfully");
+    expect(result.body).toEqual(expectedResponse.body);
   });
 
   it("should log an error and return a 500 status code when there is an error while storing driver tips", async () => {
@@ -79,9 +140,9 @@ describe("handleStoreDriverTip", () => {
       Records: [
         {
           body: JSON.stringify({
-            driverId: "1234",
+            driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "02-02-2012",
+            eventTime: "2019-09-16T10:58:14.651Z",
           } as DriverTipEvent),
         },
       ],

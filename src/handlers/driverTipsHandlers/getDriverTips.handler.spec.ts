@@ -4,7 +4,7 @@ import { Driver } from "../../models/driver";
 
 import { handleGetDriverTips } from "./getDriverTips.handler";
 
-import { DriverTotalTips } from "../../models/driverTotalTips";
+import { DriverTotalTips } from "../../models/driverTips";
 import { getDriver } from "../../repositories/driver/driver.repository";
 import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
 

@@ -30,9 +30,39 @@ describe("handleCreateDriver", () => {
     expect(result).toEqual(expectedResponse);
   });
 
+  it("should return a 400 response when no firstname is provided", async () => {
+    const event = {
+      body: '{"lastname": "singh", "driverLicenseId": "12345"}',
+    } as unknown as APIGatewayEvent;
+
+    const result = await handleCreateDriver(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("should return a 400 response when no lastname is provided", async () => {
+    const event = {
+      body: '{"firstname": "singh", "driverLicenseId": "12345"}',
+    } as unknown as APIGatewayEvent;
+
+    const result = await handleCreateDriver(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
+  it("should return a 400 response when no driverLicenseId is provided", async () => {
+    const event = {
+      body: '{"firstname": "singh", "lastname": "singh"}',
+    } as unknown as APIGatewayEvent;
+
+    const result = await handleCreateDriver(event);
+
+    expect(result.statusCode).toEqual(400);
+  });
+
   it("should return a 500 response when createDriver fails", async () => {
     const event = {
-      body: '{"name": "John Doe", "email": "johndoe@example.com"}',
+      body: '{"firstname": "John Doe", "lastname": "singh", "driverLicenseId": "12345"}',
     } as APIGatewayEvent;
 
     mockCreateDriver.mockRejectedValue(new Error("Error creating driver"));

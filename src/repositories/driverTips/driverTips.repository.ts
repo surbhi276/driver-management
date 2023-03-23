@@ -5,8 +5,7 @@ import {
   todayTipsFieldName,
   weeklyTipsFieldName,
 } from "../../config";
-import { DriverTotalTips } from "../../models/driverTotalTips";
-import { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { DriverTotalTips, DriverTipEvent } from "../../models/driverTips";
 import { Logger } from "../../shared/logger/logger";
 
 const logger = new Logger();
@@ -72,8 +71,10 @@ export const storeDriverTip = async (
   try {
     // Compute daily and weekly timestamp values based on the eventTime
     const eventTimestamp = new Date(eventTime).getTime();
-    const dayTimestamp = new Date(new Date().setUTCHours(0, 0, 0, 0)).getTime();
-    const weekTimestamp =
+    const todayTimestamp = new Date(
+      new Date().setUTCHours(0, 0, 0, 0)
+    ).getTime();
+    const startOfWeekTimestamp =
       new Date(new Date().setUTCHours(0, 0, 0, 0)).getTime() -
       new Date().getUTCDay() * 24 * 60 * 60 * 1000;
 
@@ -88,7 +89,7 @@ export const storeDriverTip = async (
     };
 
     // If the event is from today, add the tip to dailyTips
-    if (eventTimestamp >= dayTimestamp) {
+    if (eventTimestamp >= todayTimestamp) {
       updateParams.UpdateExpression += `, todayTips = if_not_exists(${todayTipsFieldName}, :zero) + :todayAmount`;
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
@@ -98,7 +99,7 @@ export const storeDriverTip = async (
     }
 
     // If the event is from this week, add the tip to weeklyTips
-    if (eventTimestamp >= weekTimestamp) {
+    if (eventTimestamp >= startOfWeekTimestamp) {
       updateParams.UpdateExpression += `, weeklyTips = if_not_exists(${weeklyTipsFieldName}, :zero) + :weeklyAmount`;
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
