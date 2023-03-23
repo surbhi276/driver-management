@@ -4,7 +4,6 @@ import { DRIVER_TABLE_NAME } from "../../config";
 import type { Driver } from "../../models/driver";
 
 const dynamoDbInstance = DynamoDBClient.getInstance();
-console.log(dynamoDbInstance, "lll");
 const dynamodbClient = dynamoDbInstance.getClient();
 
 export const createDriver = async (driver: Driver): Promise<Driver> => {
@@ -21,7 +20,6 @@ export const createDriver = async (driver: Driver): Promise<Driver> => {
       },
     })
     .promise();
-
   return driver;
 };
 
@@ -34,8 +32,7 @@ export const getDriver = async (driverId: string): Promise<Driver | null> => {
       },
     })
     .promise();
-  console.log(Item, "ppp");
-  console.log(Item, "ppp");
+
   if (!Item) {
     return null;
   }

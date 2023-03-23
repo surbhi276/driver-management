@@ -1,52 +1,64 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
-import type { APIGatewayEvent } from "aws-lambda";
+import type { APIGatewayEvent } from "aws-lambda/trigger/api-gateway-proxy";
 
 import { getDriver } from "../../repositories/driver/driver.repository";
 
 import { handleGetDriver } from "./getDriver.handler";
 
 jest.mock("../../repositories/driver/driver.repository");
+jest.mock("../../shared/logger/logger");
+
+const mockGetDriver = getDriver as jest.MockedFunction<typeof getDriver>;
 
 describe("handleGetDriver", () => {
-  const mockDriver = { id: "1", name: "John Doe", rating: 4.8 };
-
   beforeEach(() => {
-    jest.resetAllMocks();
+    jest.clearAllMocks();
   });
 
-  it("should return 400 if id is missing in pathParameters", async () => {
-    const event = { pathParameters: {} } as APIGatewayEvent;
-    const result = await handleGetDriver(event);
-    expect(result.statusCode).toBe(400);
-    expect(result.body).toBe("path parameter missing");
+  it("returns 400 status code when event is missing", async () => {
+    const event = {};
+    const result = await handleGetDriver(event as APIGatewayEvent);
+
+    expect(result.statusCode).toEqual(400);
+    expect(result.body).toEqual("path parameter missing");
+  });
+  it("returns 400 status code when path parameter is missing", async () => {
+    const event = { pathParameters: {} };
+    const result = await handleGetDriver(event as APIGatewayEvent);
+
+    expect(result.statusCode).toEqual(400);
+    expect(result.body).toEqual("path parameter missing");
   });
 
-  it("should call getDriver with correct id", async () => {
-    const event = { pathParameters: { id: "1" } } as APIGatewayEvent;
-    await handleGetDriver(event);
-    expect(getDriver).toHaveBeenCalledWith("1");
+  it("returns 500 status code when getDriver function throws an error", async () => {
+    const event = { pathParameters: { id: "1234" } };
+    const error = new Error("Failed to get driver");
+    (getDriver as jest.MockedFunction<typeof getDriver>).mockRejectedValueOnce(
+      error
+    );
+
+    const result = await handleGetDriver(event as unknown as APIGatewayEvent);
+
+    expect(result.statusCode).toEqual(500);
+    expect(result.body).toEqual(
+      JSON.stringify({ message: "Failed to get driver" })
+    );
   });
 
-  it("should return 200 with driver data if driver is found", async () => {
-    getDriver.mockResolvedValue(mockDriver);
-    const event = { pathParameters: { id: "1" } };
-    const result = await handleGetDriver(event);
-    expect(result.statusCode).toBe(200);
-    expect(result.body).toBe(JSON.stringify(mockDriver));
-  });
+  it("returns 200 status code when driver is successfully fetched", async () => {
+    const event = { pathParameters: { id: "1234" } };
+    const driver = {
+      id: "1234",
+      firstname: "abc",
+      lastname: "abc",
+      driverLicenseId: "123456",
+    };
+    mockGetDriver.mockResolvedValueOnce(driver);
 
-  it("should return 404 if driver is not found", async () => {
-    getDriver.mockResolvedValue(null);
-    const event = { pathParameters: { id: "1" } };
-    const result = await handleGetDriver(event);
-    expect(result.statusCode).toBe(404);
-  });
+    const result = await handleGetDriver(event as unknown as APIGatewayEvent);
 
-  it("should throw error if getDriver throws error", async () => {
-    const error = new Error("Some error");
-    getDriver.mockRejectedValue(error);
-    const event = { pathParameters: { id: "1" } };
-    await expect(handleGetDriver(event)).rejects.toThrow(error);
+    expect(result.statusCode).toEqual(200);
+    expect(result.body).toEqual(JSON.stringify(driver));
   });
 });

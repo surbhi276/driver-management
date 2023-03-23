@@ -1,58 +1,76 @@
+/* eslint-disable new-cap */
+/* eslint-disable @typescript-eslint/unbound-method */
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
-import type { APIGatewayEvent } from "aws-lambda/trigger/api-gateway-proxy";
-
-import type { Driver } from "../../models/driver";
+import type { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { handleCreateDriver } from "./createDriver.handler";
 
 import { createDriver } from "../../repositories/driver/driver.repository";
 
-// Mock the createDriver function
+jest.mock("../../repositories/driver/driver.repository");
 
-jest.mock("../../repositories/driver/driver.repository", () => ({
-  createDriver: jest.fn().mockResolvedValue({
-    id: "1222",
-    firstname: "xyz",
-    lastname: "abc",
-    driverLicenseId: "123456",
-  }),
-}));
+const mockCreateDriver = createDriver as jest.MockedFunction<
+  typeof createDriver
+>;
 
 describe("handleCreateDriver", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it("should return a 400 error if no body is provided", async () => {
+  it("should return a 400 response when no request body is provided", async () => {
     const event = {
-      body: null,
-    } as APIGatewayEvent;
+      body: undefined,
+    } as unknown as APIGatewayEvent;
+
+    const expectedResponse: APIGatewayProxyResult = {
+      statusCode: 400,
+      body: JSON.stringify({ message: "invalid input" }),
+    };
+
     const result = await handleCreateDriver(event);
 
-    expect(result.statusCode).toEqual(400);
-    expect(result.body).toEqual(JSON.stringify({ message: "invalid input" }));
+    expect(result).toEqual(expectedResponse);
   });
 
-  it("should create a driver and return a 201 success response", async () => {
-    // Mock the createDriver function to return a driver
-    const mockDriver: Driver = {
-      id: "1222",
-      firstname: "xyz",
+  it("should return a 500 response when createDriver fails", async () => {
+    const event = {
+      body: '{"name": "John Doe", "email": "johndoe@example.com"}',
+    } as APIGatewayEvent;
+
+    mockCreateDriver.mockRejectedValue(new Error("Error creating driver"));
+
+    const expectedResponse: APIGatewayProxyResult = {
+      statusCode: 500,
+      body: JSON.stringify({ message: "Failed to create driver" }),
+    };
+
+    const result = await handleCreateDriver(event);
+
+    expect(result).toEqual(expectedResponse);
+  });
+
+  it("should return a 201 response when createDriver succeeds", async () => {
+    const event = {
+      body: '{"firstname": "xyz", "lastname": "xyz", "driverLicenseId": "1234"}',
+    } as APIGatewayEvent;
+
+    const createdDriver = {
+      id: "1234",
+      firstname: "abc",
       lastname: "abc",
       driverLicenseId: "123456",
     };
 
-    const event = {
-      body: JSON.stringify({
-        firstname: "xyz",
-        lastname: "abc",
-        driverLicenseId: "123456",
-      }),
-    } as APIGatewayEvent;
+    mockCreateDriver.mockResolvedValue(createdDriver);
+
+    const expectedResponse: APIGatewayProxyResult = {
+      statusCode: 201,
+      body: JSON.stringify(createdDriver),
+    };
+
     const result = await handleCreateDriver(event);
 
-    expect(createDriver).toBeCalledTimes(1);
-    expect(result.statusCode).toEqual(201);
-    expect(result.body).toEqual(JSON.stringify(mockDriver));
+    expect(result).toEqual(expectedResponse);
   });
 });

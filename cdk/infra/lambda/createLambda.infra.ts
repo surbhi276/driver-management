@@ -9,7 +9,7 @@ import {
   lambdaConfig,
   environmentConfig,
   LAMBDA_PREFIX,
-  LAMBDA_HANDLER_DEFAULT_PATH
+  LAMBDA_HANDLER_DEFAULT_PATH,
 } from "../config";
 
 export const createLambda = (
@@ -32,7 +32,7 @@ export const createLambda = (
       sourceMap: true,
       // Remember to keep ci, cdk lambda function, codebuild and tsconfig in sync
       target: lambdaConfig.target,
-      tsconfig: lambdaConfig.tsconfig
+      tsconfig: lambdaConfig.tsconfig,
     },
     runtime: Runtime.NODEJS_16_X,
     memorySize: 1024,
@@ -40,6 +40,6 @@ export const createLambda = (
     environment: {
       STAGE: environmentConfig.stage,
       NODE_OPTIONS: environmentConfig.nodeOptions,
-      ...additionalEnvironment
-    }
+      ...additionalEnvironment,
+    },
   });

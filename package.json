@@ -32,7 +32,10 @@
   "scripts": {
     "build": "tsc",
     "test": "jest",
-    "lint": "eslint ./src/",
+    "test:watch": "jest --watch",
+    "test:cov": "jest --coverage",
+    "lint": "eslint \"{src,cdk}/**/*.ts\" --fix",
+    "lint:check": "eslint \"{src,cdk}/**/*.ts\"",
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "bootstrap": "yarn cdk bootstrap",

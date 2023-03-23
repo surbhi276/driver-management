@@ -18,7 +18,7 @@ import {
   sqsConfig,
   driverTipsQueueConfig,
   driverTableConfig,
-  driverTipsTableConfig
+  driverTipsTableConfig,
 } from "./config";
 import { createDynamodb } from "./dynamodb/createDynamodb.infra";
 import { createEvents } from "./events/createEvents.infra";
@@ -151,7 +151,7 @@ export class InfraStack extends Stack {
     // SQS integration with lambda
     storeDriverTipLambda.addEventSourceMapping(sqsConfig.id, {
       eventSourceArn: driverTipsQueue.queueArn,
-      batchSize: sqsConfig.batchSize // number of messages to retrieve from the queue per invocation
+      batchSize: sqsConfig.batchSize, // number of messages to retrieve from the queue per invocation
     });
   }
 }

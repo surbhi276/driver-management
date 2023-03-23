@@ -15,5 +15,5 @@ export const createEvents = (
     ruleName,
     enabled,
     targets: [new LambdaFunctionTarget(lambdaFunction)],
-    schedule: Schedule.rate(Duration.minutes(2))
+    schedule: Schedule.rate(Duration.minutes(2)),
   });

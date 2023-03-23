@@ -13,7 +13,7 @@ export const createQueue = (
       maxReceiveCount: 5,
       queue: new Queue(scope, deadLetterQueueName, {
         queueName: deadLetterQueueName,
-        encryption: QueueEncryption.KMS_MANAGED
-      })
-    }
+        encryption: QueueEncryption.KMS_MANAGED,
+      }),
+    },
   });

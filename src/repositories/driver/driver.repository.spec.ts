@@ -1,60 +1,135 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/unbound-method */
+
 import { DynamoDBClient } from "../../client/dynamodb.client";
 
-import { createDriver, getDriver } from "./driver.repository";
+import { createDriver, getDriver, getDrivers } from "./driver.repository";
 
-// Mock the DynamoDBClient
-jest.mock("../../client/dynamodb.client", () => ({
-  DynamoDBClient: {
-    getInstance: jest.fn(() => ({
-      getClient: jest.fn(() => ({
-        put: jest.fn(() => ({ promise: jest.fn() })),
-        get: jest.fn(() => ({ promise: jest.fn() })),
-        scan: jest.fn(() => ({ promise: jest.fn() })),
-      })),
-    })),
-  },
-}));
+import { DRIVER_TABLE_NAME } from "../../config";
+import type { Driver } from "../../models/driver";
 
-describe("createDriver", () => {
-  it("should create a driver", async () => {
-    const driver = {
-      id: "1",
-      firstname: "John",
-      lastname: "Doe",
-      driverLicenseId: "1234",
-    };
-    const createdDriver = await createDriver(driver);
-    expect(createdDriver).toEqual(driver);
-  });
+// Mock the DynamoDB.DocumentClient class
+jest.mock("aws-sdk", () => {
+  const mDynamoDB = {
+    put: jest.fn().mockReturnThis(),
+    get: jest.fn().mockReturnThis(),
+    scan: jest.fn().mockReturnThis(),
+    promise: jest.fn(),
+  };
+  const mDocumentClient = {
+    put: jest.fn(() => mDynamoDB),
+    get: jest.fn(() => mDynamoDB),
+    scan: jest.fn(() => mDynamoDB),
+  };
+  return {
+    DynamoDB: {
+      DocumentClient: jest.fn(() => mDocumentClient),
+    },
+  };
 });
 
-describe("getDriver", () => {
-  it("should return a driver if it exists", async () => {
-    const driverId = "1";
-    const driver = {
-      id: driverId,
-      firstname: "John",
-      lastname: "Doe",
-      driverLicenseId: "1234",
-    };
-    // Mock the response from DynamoDB
-    jest.spyOn(global.console, "log").mockImplementation(() => {});
-    jest
-      .spyOn(DynamoDBClient.getInstance().getClient(), "get")
-      .mockResolvedValue({ Item: driver } as never);
-    const retrievedDriver = await getDriver(driverId);
-    expect(retrievedDriver).toEqual(driver);
+// Test cases
+describe("driver repository", () => {
+  const driver: Driver = {
+    id: "1",
+    firstname: "John",
+    lastname: "Doe",
+    driverLicenseId: "123456",
+  };
+  beforeEach(() => {
+    // Clear all mock calls before each test
+    jest.clearAllMocks();
   });
 
-  it("should return null if the driver does not exist", async () => {
-    const driverId = "nonexistent-id";
-    // Mock the response from DynamoDB
-    jest.spyOn(global.console, "log").mockImplementation(() => {});
-    jest
-      .spyOn(DynamoDBClient.getInstance().getClient(), "get")
-      .mockResolvedValue({} as never);
-    const retrievedDriver = await getDriver(driverId);
-    expect(retrievedDriver).toBeNull();
+  describe("createDriver", () => {
+    it("should create a driver", async () => {
+      const result = await createDriver(driver);
+
+      expect(result).toEqual(driver);
+      expect(DynamoDBClient.getInstance().getClient().put).toHaveBeenCalledWith(
+        {
+          TableName: DRIVER_TABLE_NAME,
+          Item: driver,
+        }
+      );
+    });
+  });
+
+  describe("getDriver", () => {
+    const driverId = "1234";
+    it("should return a driver if it exists", async () => {
+      const mockGetResponse = { Item: driver };
+      const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
+      mockGet.mockReturnValue({
+        promise: jest.fn().mockResolvedValue(mockGetResponse),
+      });
+
+      const result = await getDriver(driverId);
+
+      expect(result).toEqual(driver);
+      expect(DynamoDBClient.getInstance().getClient().get).toHaveBeenCalledWith(
+        {
+          TableName: DRIVER_TABLE_NAME,
+          Key: { id: driverId },
+        }
+      );
+    });
+
+    it("should return null if driver does not exist", async () => {
+      const mockGetResponse = { Item: null };
+      const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
+      mockGet.mockReturnValue({
+        promise: jest.fn().mockResolvedValue(mockGetResponse),
+      });
+
+      const result = await getDriver(driverId);
+
+      expect(result).toBeNull();
+      expect(DynamoDBClient.getInstance().getClient().get).toHaveBeenCalledWith(
+        {
+          TableName: DRIVER_TABLE_NAME,
+          Key: { id: driverId },
+        }
+      );
+    });
+  });
+
+  describe("getDrivers", () => {
+    it("should return a drivers if exists", async () => {
+      const mockScanResponse = { Items: [driver] };
+      const mockScan = DynamoDBClient.getInstance().getClient()
+        .scan as jest.Mock;
+      mockScan.mockReturnValue({
+        promise: jest.fn().mockResolvedValue(mockScanResponse),
+      });
+
+      const result = await getDrivers();
+
+      expect(result).toEqual([driver]);
+      expect(
+        DynamoDBClient.getInstance().getClient().scan
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TABLE_NAME,
+      });
+    });
+
+    it("should return blank array if no driver exist", async () => {
+      const mockScanResponse = { Item: null };
+      const mockScan = DynamoDBClient.getInstance().getClient()
+        .scan as jest.Mock;
+      mockScan.mockReturnValue({
+        promise: jest.fn().mockResolvedValue(mockScanResponse),
+      });
+
+      const result = await getDrivers();
+
+      expect(result).toStrictEqual([]);
+      expect(
+        DynamoDBClient.getInstance().getClient().scan
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TABLE_NAME,
+      });
+    });
   });
 });

@@ -2,7 +2,7 @@ import {
   AttributeType,
   BillingMode,
   Table,
-  TableEncryption
+  TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
 import { RemovalPolicy } from "aws-cdk-lib/core/lib/removal-policy";
 import type { Construct } from "constructs/lib/construct";
@@ -17,10 +17,10 @@ export const createDynamodb = (
     tableName,
     partitionKey: {
       name: partitionKey,
-      type: AttributeType.STRING
+      type: AttributeType.STRING,
     },
     pointInTimeRecovery: true,
     billingMode: BillingMode.PAY_PER_REQUEST,
     removalPolicy: RemovalPolicy.DESTROY,
-    encryption: TableEncryption.DEFAULT
+    encryption: TableEncryption.DEFAULT,
   });

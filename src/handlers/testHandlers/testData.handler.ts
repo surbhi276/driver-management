@@ -3,7 +3,7 @@ import { v4 as uuid } from "uuid";
 
 import {
   createDriver,
-  getDrivers
+  getDrivers,
 } from "../../repositories/driver/driver.repository";
 
 const sqs = new SQS();
@@ -17,14 +17,14 @@ export const handleCreateDriversTestData = async (): Promise<void> => {
       id: uuid(),
       firstname: "Linda",
       lastname: "Doe",
-      driverLicenseId: "12345"
+      driverLicenseId: "12345",
     });
 
     await createDriver({
       id: uuid(),
       firstname: "Dean",
       lastname: "Driver",
-      driverLicenseId: "9654321"
+      driverLicenseId: "9654321",
     });
   } else {
     console.log(
@@ -42,7 +42,7 @@ export const handleSampleDriverTippingEvent = async (): Promise<void> => {
     const body = {
       driverId: drivers[Math.floor(Math.random() * drivers.length)].id,
       amount: (Math.random() * 10).toFixed(2),
-      eventTime: new Date().toISOString()
+      eventTime: new Date().toISOString(),
     };
 
     console.log(`sending sample tipping event ${JSON.stringify(body)}`);
@@ -50,7 +50,7 @@ export const handleSampleDriverTippingEvent = async (): Promise<void> => {
     await sqs
       .sendMessage({
         QueueUrl: queueUrl,
-        MessageBody: JSON.stringify(body)
+        MessageBody: JSON.stringify(body),
       })
       .promise();
   }

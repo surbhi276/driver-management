@@ -30,10 +30,10 @@ export const handleCreateDriver = async (
       body: JSON.stringify(driver),
     };
   } catch (error) {
-    logger.error("Failed to create driver");
+    logger.error("Error occured while creating driver", error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: "failed to create driver" }),
+      body: JSON.stringify({ message: "Failed to create driver" }),
     };
   }
 };

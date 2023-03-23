@@ -1,7 +1,7 @@
 import {
   EndpointType,
   MethodLoggingLevel,
-  RestApi
+  RestApi,
 } from "aws-cdk-lib/aws-apigateway";
 import { ApiGateway } from "aws-cdk-lib/aws-events-targets";
 import type { Construct } from "constructs/lib/construct";
@@ -19,9 +19,9 @@ export const createApiGateway = (
     deployOptions: {
       stageName,
       metricsEnabled: true,
-      loggingLevel: MethodLoggingLevel.INFO
+      loggingLevel: MethodLoggingLevel.INFO,
     },
-    endpointTypes: [EndpointType.REGIONAL]
+    endpointTypes: [EndpointType.REGIONAL],
   });
   return new ApiGateway(restApi);
 };
