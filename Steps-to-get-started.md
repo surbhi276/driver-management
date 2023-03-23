@@ -44,4 +44,5 @@ The driver service has been extended to keep tracks of the tips received by each
 - Added logging functionality to make the debugging easier.
 - Updated the folders structure, like below screenshot: <br>
   <img width="267" alt="cdk" src="https://user-images.githubusercontent.com/25278823/227360530-d7031373-2b1b-4bb7-94b1-14e17930e645.png"> <br>
-  <img width="363" alt="src" src="https://user-images.githubusercontent.com/25278823/227360581-8d21bd96-fcd1-40c2-a14b-85deb14bd0d8.png">
+  <img width="368" alt="src" src="https://user-images.githubusercontent.com/25278823/227382762-d366c153-15e1-4a14-845f-59d89572f347.png">
+
