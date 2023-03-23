@@ -31,14 +31,13 @@
 3. Write Unit tests for the handlers.
    - Added unit test cases and enabled the project and it's functionalities to be tested in development environment.
 4. Improve code quality:
-   - ## List of flaws I found in the given code and how I resolved it:
-5. ## Explain your decisions in regards to the vision you had for the project.
+   - List of flaws I found in the given code and how I resolved it:
+5. Explain your decisions in regards to the vision you had for the project.
 
 ### Additional improvements done in the project:
 
+- Introduced validation on incoming request(s).
+- Added logging functionality to make the debugging easier.
 - Updated the folders structure, like below screenshot: <br>
-    <img width="267" alt="cdk" src="https://user-images.githubusercontent.com/25278823/227360530-d7031373-2b1b-4bb7-94b1-14e17930e645.png"> <br>
-    <img width="363" alt="src" src="https://user-images.githubusercontent.com/25278823/227360581-8d21bd96-fcd1-40c2-a14b-85deb14bd0d8.png">
-
-- Added logging functionality to make the debugging easier
-- Introduced validation on incoming request(s)
+  <img width="267" alt="cdk" src="https://user-images.githubusercontent.com/25278823/227360530-d7031373-2b1b-4bb7-94b1-14e17930e645.png"> <br>
+  <img width="363" alt="src" src="https://user-images.githubusercontent.com/25278823/227360581-8d21bd96-fcd1-40c2-a14b-85deb14bd0d8.png">
