@@ -3,9 +3,10 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import type { APIGatewayEvent } from "aws-lambda";
 
+import type { Driver } from "../../models/driver";
+
 import { handleGetDriverTips } from "./getDriverTips.handler";
 
-import type { Driver } from "../../models/driver";
 import type { DriverTotalTips } from "../../models/driverTotalTips";
 import { getDriver } from "../../repositories/driver/driver.repository";
 import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
@@ -30,13 +31,14 @@ describe("handleGetDriverTips", () => {
       id: "1234",
       firstname: "abc",
       lastname: "1bc",
-      driverLicenseId: "123456"
+      driverLicenseId: "123456",
     };
+    const timestamp = new Date().toISOString();
     const mockDriverTips: DriverTotalTips = {
       driverId: "1234",
       todayTips: 12,
       weeklyTips: 13,
-      lastUpdatedTimestamp: new Date().toISOString()
+      lastUpdatedTimestamp: timestamp,
     };
 
     const expectedOutput = {
@@ -47,7 +49,7 @@ describe("handleGetDriverTips", () => {
       lastname: "1bc",
       todayTips: 12,
       weeklyTips: 13,
-      lastUpdatedTimestamp: new Date().toISOString()
+      lastUpdatedTimestamp: timestamp,
     };
 
     mockGetDriver.mockResolvedValue(mockDriver);

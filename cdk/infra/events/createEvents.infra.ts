@@ -1,8 +1,8 @@
+import { Duration } from "aws-cdk-lib";
 import { Rule, Schedule } from "aws-cdk-lib/aws-events";
 import { LambdaFunction as LambdaFunctionTarget } from "aws-cdk-lib/aws-events-targets";
 import type { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Duration } from "aws-cdk-lib/core/lib/duration";
-import type { Construct } from "constructs/lib/construct";
+import type { Construct } from "constructs";
 
 export const createEvents = (
   scope: Construct,

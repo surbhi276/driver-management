@@ -4,7 +4,7 @@ import {
   RestApi,
 } from "aws-cdk-lib/aws-apigateway";
 import { ApiGateway } from "aws-cdk-lib/aws-events-targets";
-import type { Construct } from "constructs/lib/construct";
+import type { Construct } from "constructs";
 
 import { environmentConfig } from "../config";
 

@@ -1,5 +1,5 @@
 import { Queue, QueueEncryption } from "aws-cdk-lib/aws-sqs";
-import type { Construct } from "constructs/lib/construct";
+import type { Construct } from "constructs";
 
 export const createQueue = (
   scope: Construct,

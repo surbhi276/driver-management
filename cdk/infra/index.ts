@@ -1,5 +1,5 @@
 import { Stack, App } from "aws-cdk-lib";
-import { LambdaIntegration } from "aws-cdk-lib/aws-apigateway/lib/integrations/lambda";
+import { LambdaIntegration } from "aws-cdk-lib/aws-apigateway";
 import { HttpMethod } from "aws-cdk-lib/aws-events";
 
 import { createApiGateway } from "./apiGateway/createApiGateway.infra";

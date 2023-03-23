@@ -1,11 +1,11 @@
+import { RemovalPolicy } from "aws-cdk-lib";
 import {
   AttributeType,
   BillingMode,
   Table,
   TableEncryption,
 } from "aws-cdk-lib/aws-dynamodb";
-import { RemovalPolicy } from "aws-cdk-lib/core/lib/removal-policy";
-import type { Construct } from "constructs/lib/construct";
+import type { Construct } from "constructs";
 
 export const createDynamodb = (
   scope: Construct,

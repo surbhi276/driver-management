@@ -1,9 +1,9 @@
 import path from "path";
 
+import { Duration } from "aws-cdk-lib";
 import { Runtime } from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
-import { Duration } from "aws-cdk-lib/core/lib/duration";
-import type { Construct } from "constructs/lib/construct";
+import type { Construct } from "constructs";
 
 import {
   lambdaConfig,

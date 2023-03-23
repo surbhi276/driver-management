@@ -54,7 +54,7 @@ describe("DriverTips.repository", () => {
         {
           TableName: DRIVER_TIPS_TABLE_NAME,
           Key: {
-            driverIdParam: mockedDriverTips.driverId,
+            driverId: mockedDriverTips.driverId,
           },
         }
       );
@@ -69,9 +69,8 @@ describe("DriverTips.repository", () => {
         promise: jest.fn().mockResolvedValue(mockGetResponse),
       });
 
-      await expect(getDriverTips(driverId)).rejects.toThrow(
-        `No tipping information found for driver id ${driverId}`
-      );
+      const driverTips = await getDriverTips(driverId);
+      expect(driverTips).toBeNull();
     });
 
     it("should handle errors thrown by DynamoDB", async () => {
@@ -98,11 +97,12 @@ describe("DriverTips.repository", () => {
         TableName: DRIVER_TIPS_TABLE_NAME,
         Key: { driverId: "123" },
         UpdateExpression:
-          "ADD todayTips :todayAmount, weeklyTips :weeklyAmount",
+          "SET lastUpdatedTimestamp = :eventTime, todayTips = if_not_exists(todayTips, :zero) + :todayAmount, weeklyTips = if_not_exists(weeklyTips, :zero) + :weeklyAmount",
         ExpressionAttributeValues: {
-          ":lastUpdatedTimestamp": driverTipEvent.eventTime,
+          ":eventTime": driverTipEvent.eventTime,
           ":todayAmount": 10,
           ":weeklyAmount": 10,
+          ":zero": 0,
         },
       };
       await storeDriverTip(driverTipEvent);
@@ -143,7 +143,7 @@ describe("DriverTips.repository", () => {
 
       const expectedParams = {
         TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { primaryKey: "123" },
+        Key: { driverId: "123" },
         UpdateExpression: "SET todayTips = :value",
         ExpressionAttributeValues: { ":value": 0 },
       };
@@ -173,13 +173,13 @@ describe("DriverTips.repository", () => {
 
       const expectedParamsTodayTips = {
         TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { primaryKey: "123" },
+        Key: { driverId: "123" },
         UpdateExpression: "SET todayTips = :value",
         ExpressionAttributeValues: { ":value": 0 },
       };
       const expectedParamsWeeklyTips = {
         TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { primaryKey: "123" },
+        Key: { driverId: "123" },
         UpdateExpression: "SET weeklyTips = :value",
         ExpressionAttributeValues: { ":value": 0 },
       };

@@ -3,11 +3,10 @@
 /* eslint-disable @typescript-eslint/unbound-method */
 
 import { DynamoDBClient } from "../../client/dynamodb.client";
-
-import { createDriver, getDriver, getDrivers } from "./driver.repository";
-
 import { DRIVER_TABLE_NAME } from "../../config";
 import type { Driver } from "../../models/driver";
+
+import { createDriver, getDriver, getDrivers } from "./driver.repository";
 
 // Mock the DynamoDB.DocumentClient class
 jest.mock("aws-sdk", () => {

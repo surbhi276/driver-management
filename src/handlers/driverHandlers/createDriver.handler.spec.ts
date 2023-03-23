@@ -3,9 +3,9 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import type { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { handleCreateDriver } from "./createDriver.handler";
-
 import { createDriver } from "../../repositories/driver/driver.repository";
+
+import { handleCreateDriver } from "./createDriver.handler";
 
 jest.mock("../../repositories/driver/driver.repository");
 

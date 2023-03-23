@@ -1,9 +1,15 @@
+/* eslint-disable no-useless-catch */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/restrict-template-expressions */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { DynamoDBClient } from "../../client/dynamodb.client";
-import { DRIVER_TIPS_TABLE_NAME } from "../../config";
+import {
+  DRIVER_TIPS_TABLE_NAME,
+  lastUpdatedTimestampFieldName,
+  todayTipsFieldName,
+  weeklyTipsFieldName,
+} from "../../config";
 import type { DriverTotalTips } from "../../models/driverTotalTips";
 import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
 
@@ -17,32 +23,29 @@ const updateFieldInDynamoDB = async (
 ): Promise<void> => {
   const params: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
     TableName: DRIVER_TIPS_TABLE_NAME,
-    Key: { primaryKey },
+    Key: { driverId: primaryKey },
     UpdateExpression: `SET ${fieldName} = :value`,
     ExpressionAttributeValues: { ":value": value },
   };
 
-  console.log(params, "params");
   await dynamodbClient.update(params).promise();
 };
 
 export const getDriverTips = async (
   driverIdParam: string
-): Promise<DriverTotalTips> => {
+): Promise<DriverTotalTips | null> => {
   try {
     const { Item } = await dynamodbClient
       .get({
         TableName: DRIVER_TIPS_TABLE_NAME,
         Key: {
-          driverIdParam,
+          driverId: driverIdParam,
         },
       })
       .promise();
 
     if (!Item) {
-      throw new Error(
-        `No tipping information found for driver id ${driverIdParam}`
-      );
+      return null;
     }
 
     const { driverId, todayTips, weeklyTips, lastUpdatedTimestamp } = Item;
@@ -54,9 +57,6 @@ export const getDriverTips = async (
       lastUpdatedTimestamp,
     };
   } catch (err) {
-    console.error(
-      `Failed to get the tipping information of driver id ${driverIdParam}: ${err}`
-    );
     throw err;
   }
 };
@@ -78,33 +78,34 @@ export const storeDriverTip = async (
     const updateParams: AWS.DynamoDB.DocumentClient.UpdateItemInput = {
       TableName: DRIVER_TIPS_TABLE_NAME,
       Key: { driverId },
-      UpdateExpression: "ADD",
+      UpdateExpression: `SET ${lastUpdatedTimestampFieldName} = :eventTime`,
       ExpressionAttributeValues: {
-        ":lastUpdatedTimestamp": eventTime,
+        ":eventTime": eventTime,
       },
     };
 
     // If the event is from today, add the tip to dailyTips
     if (eventTimestamp >= dayTimestamp) {
-      updateParams.UpdateExpression += " todayTips :todayAmount";
+      updateParams.UpdateExpression += `, todayTips = if_not_exists(${todayTipsFieldName}, :zero) + :todayAmount`;
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
         ":todayAmount": Number(amount),
+        ":zero": 0,
       };
     }
 
     // If the event is from this week, add the tip to weeklyTips
     if (eventTimestamp >= weekTimestamp) {
-      updateParams.UpdateExpression += ", weeklyTips :weeklyAmount";
+      updateParams.UpdateExpression += `, weeklyTips = if_not_exists(${weeklyTipsFieldName}, :zero) + :weeklyAmount`;
       updateParams.ExpressionAttributeValues = {
         ...updateParams.ExpressionAttributeValues,
         ":weeklyAmount": Number(amount),
+        ":zero": 0,
       };
     }
-    console.log(updateParams);
+
     await dynamodbClient.update(updateParams).promise();
   } catch (err) {
-    console.error(`Failed to update tip for driver ${driverId}: ${err}`);
     throw err;
   }
 };
@@ -114,6 +115,7 @@ export const resetDriverTip = async (
   lastUpdatedTimestamp: string
 ): Promise<void> => {
   try {
+    console.log("its here");
     const getLastUpdatedTimestamp = new Date(lastUpdatedTimestamp).getTime();
     const todayTimestamp = new Date(
       new Date().setUTCHours(0, 0, 0, 0)
@@ -122,15 +124,17 @@ export const resetDriverTip = async (
       new Date(new Date().setUTCHours(0, 0, 0, 0)).getTime() -
       new Date().getUTCDay() * 24 * 60 * 60 * 1000;
 
+    console.log("Lts time stmpddd", getLastUpdatedTimestamp);
     if (getLastUpdatedTimestamp < todayTimestamp) {
-      await updateFieldInDynamoDB("todayTips", 0, driverId);
+      console.log("Lts time stmp");
+      await updateFieldInDynamoDB(todayTipsFieldName, 0, driverId);
     }
 
     if (getLastUpdatedTimestamp < startOfWeekTimestamp) {
-      await updateFieldInDynamoDB("weeklyTips", 0, driverId);
+      await updateFieldInDynamoDB(weeklyTipsFieldName, 0, driverId);
     }
+    console.log("al goog");
   } catch (err) {
-    console.error(`Failed to update tip for driver ${driverId}: ${err}`);
     throw err;
   }
 };

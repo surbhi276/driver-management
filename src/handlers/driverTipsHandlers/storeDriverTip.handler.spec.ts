@@ -1,14 +1,15 @@
 /* eslint-disable @typescript-eslint/consistent-type-assertions */
 import type { SQSEvent } from "aws-lambda";
 
+import type { DriverTotalTips } from "../../models/driverTotalTips";
+
 import { handleStoreDriverTip } from "./storeDriverTip.handler";
 
-import type { DriverTotalTips } from "../../models/driverTotalTips";
 import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
 import {
   getDriverTips,
   resetDriverTip,
-  storeDriverTip
+  storeDriverTip,
 } from "../../repositories/driverTips/driverTips.repository";
 
 jest.mock("../../repositories/driverTips/driverTips.repository");
@@ -22,7 +23,7 @@ describe("handleStoreDriverTip", () => {
     driverId: "1234",
     todayTips: 12,
     weeklyTips: 13,
-    lastUpdatedTimestamp: new Date().toISOString()
+    lastUpdatedTimestamp: new Date().toISOString(),
   };
   (getDriverTips as jest.Mock).mockResolvedValue(mockDriverTips);
   (resetDriverTip as jest.Mock).mockResolvedValue("resolve");
@@ -38,17 +39,17 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "1234",
             amount: "12",
-            eventTime: "02-02-2012"
-          } as DriverTipEvent)
+            eventTime: "02-02-2012",
+          } as DriverTipEvent),
         },
         {
           body: JSON.stringify({
             driverId: "1237",
             amount: "14",
-            eventTime: "02-02-2012"
-          } as DriverTipEvent)
-        }
-      ]
+            eventTime: "02-02-2012",
+          } as DriverTipEvent),
+        },
+      ],
     } as SQSEvent;
 
     await handleStoreDriverTip(event);
@@ -62,10 +63,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "1234",
             amount: "12",
-            eventTime: "02-02-2012"
-          } as DriverTipEvent)
-        }
-      ]
+            eventTime: "02-02-2012",
+          } as DriverTipEvent),
+        },
+      ],
     } as SQSEvent;
     const result = await handleStoreDriverTip(event);
     expect(result.statusCode).toEqual(201);
@@ -81,10 +82,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "1234",
             amount: "12",
-            eventTime: "02-02-2012"
-          } as DriverTipEvent)
-        }
-      ]
+            eventTime: "02-02-2012",
+          } as DriverTipEvent),
+        },
+      ],
     } as SQSEvent;
     const result = await handleStoreDriverTip(event);
     expect(result.statusCode).toEqual(500);

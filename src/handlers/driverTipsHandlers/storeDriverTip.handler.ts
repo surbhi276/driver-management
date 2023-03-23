@@ -22,10 +22,13 @@ export const handleStoreDriverTip = async (
     for (const { body: recordBody } of event.Records) {
       const driverTipEvent = JSON.parse(recordBody) as DriverTipEvent;
       const driverTips = await getDriverTips(driverTipEvent.driverId);
-      await resetDriverTip(
-        driverTipEvent.driverId,
-        driverTips.lastUpdatedTimestamp
-      );
+
+      if (driverTips) {
+        await resetDriverTip(
+          driverTipEvent.driverId,
+          driverTips.lastUpdatedTimestamp
+        );
+      }
       await storeDriverTip(driverTipEvent);
     }
     return {
