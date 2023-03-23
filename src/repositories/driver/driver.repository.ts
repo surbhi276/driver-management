@@ -1,7 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+import { AttributeMap } from "aws-sdk/clients/dynamodb";
+
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TABLE_NAME } from "../../config";
-import type { Driver } from "../../models/driver";
+import { Driver } from "../../models/driver";
 
 const dynamoDbInstance = DynamoDBClient.getInstance();
 const dynamodbClient = dynamoDbInstance.getClient();
@@ -37,7 +38,7 @@ export const getDriver = async (driverId: string): Promise<Driver | null> => {
     return null;
   }
 
-  const { id, firstname, lastname, driverLicenseId } = Item;
+  const { id, firstname, lastname, driverLicenseId } = Item as Driver;
 
   return {
     id,
@@ -47,7 +48,7 @@ export const getDriver = async (driverId: string): Promise<Driver | null> => {
   };
 };
 
-export const getDrivers = async (): Promise<Driver[]> => {
+export const getDrivers = async (): Promise<Array<Driver>> => {
   const { Items } = await dynamodbClient
     .scan({
       TableName: DRIVER_TABLE_NAME,
@@ -55,11 +56,11 @@ export const getDrivers = async (): Promise<Driver[]> => {
     .promise();
 
   return Items
-    ? Items.map((item) => ({
+    ? ((Items as AttributeMap[]).map((item) => ({
         id: item.id,
         firstname: item.firstname,
         lastname: item.lastname,
         driverLicenseId: item.driverLicenseId,
-      }))
+      })) as Array<Driver>)
     : [];
 };

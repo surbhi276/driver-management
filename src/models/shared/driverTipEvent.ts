@@ -1,5 +1,5 @@
-export type DriverTipEvent = {
+export interface DriverTipEvent {
   driverId: string;
   amount: string;
   eventTime: string;
-};
+}

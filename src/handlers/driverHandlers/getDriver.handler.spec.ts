@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-import type { APIGatewayEvent } from "aws-lambda/trigger/api-gateway-proxy";
+import { APIGatewayEvent } from "aws-lambda/trigger/api-gateway-proxy";
 
 import { getDriver } from "../../repositories/driver/driver.repository";
 

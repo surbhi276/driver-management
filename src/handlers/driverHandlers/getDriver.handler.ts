@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-import type { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { getDriver } from "../../repositories/driver/driver.repository";
 import { Logger } from "../../shared/logger/logger";
@@ -21,6 +20,7 @@ export const handleGetDriver = async (
 
   try {
     const driver = await getDriver(id);
+
     logger.info(`Driver is successfully fetched ${driver}`);
 
     return {

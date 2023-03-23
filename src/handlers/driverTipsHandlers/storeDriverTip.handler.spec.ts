@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import type { SQSEvent } from "aws-lambda";
 
 import type { DriverTotalTips } from "../../models/driverTotalTips";
 
 import { handleStoreDriverTip } from "./storeDriverTip.handler";
 
-import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { DriverTipEvent } from "../../models/shared/driverTipEvent";
 import {
   getDriverTips,
   resetDriverTip,
@@ -70,7 +69,7 @@ describe("handleStoreDriverTip", () => {
     } as SQSEvent;
     const result = await handleStoreDriverTip(event);
     expect(result.statusCode).toEqual(201);
-    expect(result.body).toEqual("Driver tips got stored");
+    expect(result.body).toEqual("Driver tips get stored successfully");
   });
 
   it("should log an error and return a 500 status code when there is an error while storing driver tips", async () => {

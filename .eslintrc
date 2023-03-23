@@ -5,7 +5,13 @@
   ],
   "rules": {
     "no-console": "off",
-    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }]
+    "no-restricted-syntax": "off",
+    "no-await-in-loop": "off",
+    "import/no-extraneous-dependencies": ["error", { "devDependencies": true }],
+    "@typescript-eslint/consistent-type-definitions": "off",
+    "@typescript-eslint/consistent-type-assertions": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/consistent-type-imports": "off"
   },
   "overrides": [
     {

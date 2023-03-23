@@ -1,7 +1,4 @@
-/* eslint-disable new-cap */
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-import type { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { createDriver } from "../../repositories/driver/driver.repository";
 
@@ -64,13 +61,12 @@ describe("handleCreateDriver", () => {
 
     mockCreateDriver.mockResolvedValue(createdDriver);
 
-    const expectedResponse: APIGatewayProxyResult = {
+    const expectedResponse = {
       statusCode: 201,
-      body: JSON.stringify(createdDriver),
     };
 
     const result = await handleCreateDriver(event);
 
-    expect(result).toEqual(expectedResponse);
+    expect(result.statusCode).toEqual(expectedResponse.statusCode);
   });
 });

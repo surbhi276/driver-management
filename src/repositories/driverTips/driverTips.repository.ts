@@ -1,8 +1,3 @@
-/* eslint-disable no-useless-catch */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import {
   DRIVER_TIPS_TABLE_NAME,
@@ -10,8 +5,11 @@ import {
   todayTipsFieldName,
   weeklyTipsFieldName,
 } from "../../config";
-import type { DriverTotalTips } from "../../models/driverTotalTips";
-import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { DriverTotalTips } from "../../models/driverTotalTips";
+import { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { Logger } from "../../shared/logger/logger";
+
+const logger = new Logger();
 
 const dynamoDbInstance = DynamoDBClient.getInstance();
 const dynamodbClient = dynamoDbInstance.getClient();
@@ -48,7 +46,8 @@ export const getDriverTips = async (
       return null;
     }
 
-    const { driverId, todayTips, weeklyTips, lastUpdatedTimestamp } = Item;
+    const { driverId, todayTips, weeklyTips, lastUpdatedTimestamp } =
+      Item as DriverTotalTips;
 
     return {
       driverId,
@@ -57,6 +56,10 @@ export const getDriverTips = async (
       lastUpdatedTimestamp,
     };
   } catch (err) {
+    logger.error(
+      `Error occured while get driver tip for driverId ${driverIdParam}`,
+      err
+    );
     throw err;
   }
 };
@@ -106,6 +109,10 @@ export const storeDriverTip = async (
 
     await dynamodbClient.update(updateParams).promise();
   } catch (err) {
+    logger.error(
+      `Error occured while storing driver tip for driverId ${driverId}`,
+      err
+    );
     throw err;
   }
 };
@@ -115,7 +122,6 @@ export const resetDriverTip = async (
   lastUpdatedTimestamp: string
 ): Promise<void> => {
   try {
-    console.log("its here");
     const getLastUpdatedTimestamp = new Date(lastUpdatedTimestamp).getTime();
     const todayTimestamp = new Date(
       new Date().setUTCHours(0, 0, 0, 0)
@@ -124,17 +130,18 @@ export const resetDriverTip = async (
       new Date(new Date().setUTCHours(0, 0, 0, 0)).getTime() -
       new Date().getUTCDay() * 24 * 60 * 60 * 1000;
 
-    console.log("Lts time stmpddd", getLastUpdatedTimestamp);
     if (getLastUpdatedTimestamp < todayTimestamp) {
-      console.log("Lts time stmp");
       await updateFieldInDynamoDB(todayTipsFieldName, 0, driverId);
     }
 
     if (getLastUpdatedTimestamp < startOfWeekTimestamp) {
       await updateFieldInDynamoDB(weeklyTipsFieldName, 0, driverId);
     }
-    console.log("al goog");
   } catch (err) {
+    logger.error(
+      `Error occured while reset driver tip for driverId ${driverId}`,
+      err
+    );
     throw err;
   }
 };

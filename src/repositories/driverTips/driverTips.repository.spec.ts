@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TIPS_TABLE_NAME } from "../../config";
 
@@ -11,7 +10,6 @@ import {
 
 import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
 
-// Mock the DynamoDB.DocumentClient class
 jest.mock("aws-sdk", () => {
   const mDynamoDB = {
     get: jest.fn().mockReturnThis(),

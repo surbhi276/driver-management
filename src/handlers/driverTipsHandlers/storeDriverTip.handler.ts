@@ -1,11 +1,7 @@
-/* eslint-disable consistent-return */
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-/* eslint-disable no-await-in-loop */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
 /* eslint-disable no-restricted-syntax */
 import type { APIGatewayProxyResult, SQSEvent } from "aws-lambda";
 
-import type { DriverTipEvent } from "../../models/shared/driverTipEvent";
+import { DriverTipEvent } from "../../models/shared/driverTipEvent";
 import {
   getDriverTips,
   resetDriverTip,
@@ -21,6 +17,7 @@ export const handleStoreDriverTip = async (
   try {
     for (const { body: recordBody } of event.Records) {
       const driverTipEvent = JSON.parse(recordBody) as DriverTipEvent;
+
       const driverTips = await getDriverTips(driverTipEvent.driverId);
 
       if (driverTips) {
@@ -29,11 +26,12 @@ export const handleStoreDriverTip = async (
           driverTips.lastUpdatedTimestamp
         );
       }
+
       await storeDriverTip(driverTipEvent);
     }
     return {
       statusCode: 201,
-      body: "Driver tips got stored",
+      body: "Driver tips get stored successfully",
     };
   } catch (error) {
     logger.error("Error occured while storing drivers tips", error);

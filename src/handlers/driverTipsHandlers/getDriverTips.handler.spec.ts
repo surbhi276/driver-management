@@ -1,13 +1,10 @@
-/* eslint-disable new-cap */
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/consistent-type-assertions */
-import type { APIGatewayEvent } from "aws-lambda";
+import { APIGatewayEvent } from "aws-lambda";
 
-import type { Driver } from "../../models/driver";
+import { Driver } from "../../models/driver";
 
 import { handleGetDriverTips } from "./getDriverTips.handler";
 
-import type { DriverTotalTips } from "../../models/driverTotalTips";
+import { DriverTotalTips } from "../../models/driverTotalTips";
 import { getDriver } from "../../repositories/driver/driver.repository";
 import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
 

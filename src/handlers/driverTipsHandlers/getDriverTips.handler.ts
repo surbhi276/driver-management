@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions */
-import type { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
+import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { getDriver } from "../../repositories/driver/driver.repository";
 import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
@@ -24,11 +23,12 @@ export const handleGetDriverTips = async (
     const driver = await getDriver(driverId);
     const driverTips = await getDriverTips(driverId);
     logger.info(
-      `successfully fetched full driver tips data ${driver} ${driverTips}`
+      `successfully fetched driver and driver tips data ${driver} ${driverTips}`
     );
+    const driverTipsResult = JSON.stringify({ ...driver, ...driverTips });
     return {
       statusCode: 200,
-      body: JSON.stringify({ ...driver, ...driverTips }),
+      body: driverTipsResult,
     };
   } catch (error) {
     logger.error("Error occured while getting drivers tips", error);

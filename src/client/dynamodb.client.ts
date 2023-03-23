@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return */
 import { DynamoDB } from "aws-sdk";
 
 export class DynamoDBClient {
