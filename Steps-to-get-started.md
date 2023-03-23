@@ -1,5 +1,9 @@
 ## How to get started:
 
+## Task Description:
+
+The driver service has been extended to keep tracks of the tips received by each driver and provide an API to access this data which will help the drivers get a better idea of their earnings and enable us to track the tips given by our customers effectively.
+
 ## Pre-Requisites:
 
 - AWS Account and aws-cli configured with access key and secret access key
@@ -34,7 +38,7 @@
    - List of flaws I found in the given code and how I resolved it:
 5. Explain your decisions in regards to the vision you had for the project.
 
-### Additional improvements done in the project:
+## Additional improvements done in the project:
 
 - Introduced validation on incoming request(s).
 - Added logging functionality to make the debugging easier.
