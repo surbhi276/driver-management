@@ -2,28 +2,24 @@
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TIPS_TABLE_NAME } from "../../config";
 
-import {
-  getDriverTips,
-  resetDriverTip,
-  storeDriverTip,
-} from "./driverTips.repository";
+import { getDriverTips, storeDriverTip } from "./driverTips.repository";
 
-import type { DriverTipEvent } from "../../models/driverTips";
+import type { DriverTip } from "../../models/driverTips";
 
 jest.mock("aws-sdk", () => {
   const mDynamoDB = {
-    get: jest.fn().mockReturnThis(),
-    update: jest.fn().mockReturnThis(),
-    promise: jest.fn(),
+    put: jest.fn().mockReturnThis(),
+    query: jest.fn().mockReturnThis(),
+    promise: jest.fn()
   };
   const mDocumentClient = {
-    get: jest.fn(() => mDynamoDB),
-    update: jest.fn(() => mDynamoDB),
+    put: jest.fn(() => mDynamoDB),
+    query: jest.fn(() => mDynamoDB)
   };
   return {
     DynamoDB: {
-      DocumentClient: jest.fn(() => mDocumentClient),
-    },
+      DocumentClient: jest.fn(() => mDocumentClient)
+    }
   };
 });
 
@@ -34,192 +30,463 @@ describe("DriverTips.repository", () => {
   });
   describe("getDriverTips", () => {
     it("should get driver tips from DynamoDB and return the correct data", async () => {
-      const mockedDriverTips = {
-        driverId: "test-driver-1",
-        todayTips: 100,
-        weeklyTips: 500,
+      const driverId = "123";
+      const mockedDataToday = {
+        Items: [
+          {
+            amount: { S: "100" }
+          }
+        ]
       };
-      const mockGetResponse = { Item: mockedDriverTips };
-      const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
-      mockGet.mockReturnValue({
-        promise: jest.fn().mockResolvedValue(mockGetResponse),
+      const mockedDataCurrentWeek = {
+        Items: [
+          {
+            amount: { S: "500" }
+          }
+        ]
+      };
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const startOfCurrentWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay()
+      );
+      const expectedOutput = {
+        driverId: "123",
+        todayTips: 100,
+        weeklyTips: 500
+      };
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataCurrentWeek)
+        });
+
+      const driverTips = await getDriverTips(driverId);
+
+      expect(driverTips).toEqual(expectedOutput);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression:
+          "driverId = :id AND eventTime >= :startOfCurrentWeek",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfCurrentWeek": { S: startOfCurrentWeek.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+
+    it("should throw an error if any error occurs while querying for today amount", async () => {
+      const driverId = "123";
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const expectedError = new Error("Error Occured");
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery.mockReturnValueOnce({
+        promise: jest.fn().mockRejectedValueOnce(new Error("Error Occured"))
       });
 
-      const driverTips = await getDriverTips(mockedDriverTips.driverId);
+      await expect(getDriverTips(driverId)).rejects.toThrow(expectedError);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
 
-      expect(driverTips).toEqual(mockedDriverTips);
-      expect(DynamoDBClient.getInstance().getClient().get).toHaveBeenCalledWith(
+    it("should throw an error if any error occurs while querying for current week amount", async () => {
+      const driverId = "123";
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const mockedDataToday = {
+        Items: [
+          {
+            amount: { S: "100" }
+          }
+        ]
+      };
+      const expectedError = new Error("Error Occured");
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockRejectedValueOnce(new Error("Error Occured"))
+        });
+
+      await expect(getDriverTips(driverId)).rejects.toThrow(expectedError);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+
+    it("should get driver tips from DynamoDB and return the correct data with multiple entries", async () => {
+      const driverId = "123";
+      const mockedDataToday = {
+        Items: [
+          {
+            amount: { S: "100" }
+          },
+          {
+            amount: { S: "100" }
+          },
+          {
+            amount: { S: "100" }
+          }
+        ]
+      };
+      const mockedDataCurrentWeek = {
+        Items: [
+          {
+            amount: { S: "500" }
+          },
+          {
+            amount: { S: "500" }
+          },
+          {
+            amount: { S: "500" }
+          }
+        ]
+      };
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const startOfCurrentWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay()
+      );
+      const expectedOutput = {
+        driverId: "123",
+        todayTips: 300,
+        weeklyTips: 1500
+      };
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataCurrentWeek)
+        });
+
+      const driverTips = await getDriverTips(driverId);
+
+      expect(driverTips).toEqual(expectedOutput);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression:
+          "driverId = :id AND eventTime >= :startOfCurrentWeek",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfCurrentWeek": { S: startOfCurrentWeek.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+
+    it("should get driver tips from DynamoDB and if no entry is found", async () => {
+      const driverId = "123";
+      const mockedDataToday = {
+        Items: []
+      };
+      const mockedDataCurrentWeek = {
+        Items: []
+      };
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const startOfCurrentWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay()
+      );
+      const expectedOutput = {
+        driverId: "123",
+        todayTips: 0,
+        weeklyTips: 0
+      };
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataCurrentWeek)
+        });
+
+      const driverTips = await getDriverTips(driverId);
+
+      expect(driverTips).toEqual(expectedOutput);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression:
+          "driverId = :id AND eventTime >= :startOfCurrentWeek",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfCurrentWeek": { S: startOfCurrentWeek.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+
+    it("should get driver tips from DynamoDB and if no entry is found", async () => {
+      const driverId = "123";
+      const mockedDataToday = {
+        Items: []
+      };
+      const mockedDataCurrentWeek = {
+        Items: []
+      };
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const startOfCurrentWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay()
+      );
+      const expectedOutput = {
+        driverId: "123",
+        todayTips: 0,
+        weeklyTips: 0
+      };
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataCurrentWeek)
+        });
+
+      const driverTips = await getDriverTips(driverId);
+
+      expect(driverTips).toEqual(expectedOutput);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression:
+          "driverId = :id AND eventTime >= :startOfCurrentWeek",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfCurrentWeek": { S: startOfCurrentWeek.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+
+    it("should get driver tips from DynamoDB and if no amount is available", async () => {
+      const driverId = "123";
+      const mockedDataToday = {
+        Items: [{}]
+      };
+      const mockedDataCurrentWeek = {
+        Items: [{}]
+      };
+      const now = new Date();
+      const startOfToday = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      );
+      const startOfCurrentWeek = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate() - now.getDay()
+      );
+      const expectedOutput = {
+        driverId: "123",
+        todayTips: 0,
+        weeklyTips: 0
+      };
+      const mockQuery = DynamoDBClient.getInstance().getClient()
+        .query as jest.Mock;
+      mockQuery
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataToday)
+        })
+        .mockReturnValueOnce({
+          promise: jest.fn().mockResolvedValueOnce(mockedDataCurrentWeek)
+        });
+
+      const driverTips = await getDriverTips(driverId);
+
+      expect(driverTips).toEqual(expectedOutput);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledTimes(2);
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression: "driverId = :id AND eventTime >= :startOfToday",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfToday": { S: startOfToday.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+      expect(
+        DynamoDBClient.getInstance().getClient().query
+      ).toHaveBeenCalledWith({
+        TableName: DRIVER_TIPS_TABLE_NAME,
+        KeyConditionExpression:
+          "driverId = :id AND eventTime >= :startOfCurrentWeek",
+        ExpressionAttributeValues: {
+          ":id": { S: driverId },
+          ":startOfCurrentWeek": { S: startOfCurrentWeek.toISOString() }
+        },
+        ProjectionExpression: "amount"
+      });
+    });
+  });
+  describe("storeDriverTip", () => {
+    it("should store the driver tip data", async () => {
+      const driverTip: DriverTip = {
+        driverId: "123",
+        amount: "10",
+        eventTime: "2021-04-04"
+      };
+      await storeDriverTip(driverTip);
+      expect(DynamoDBClient.getInstance().getClient().put).toHaveBeenCalledWith(
         {
           TableName: DRIVER_TIPS_TABLE_NAME,
-          Key: {
-            driverId: mockedDriverTips.driverId,
-          },
+          Item: driverTip
         }
       );
     });
 
-    it("should throw an error if no tipping information is found for the driver", async () => {
-      const driverId = "test-driver-2";
-
-      const mockGetResponse = { Item: null };
-      const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
-      mockGet.mockReturnValue({
-        promise: jest.fn().mockResolvedValue(mockGetResponse),
-      });
-
-      const driverTips = await getDriverTips(driverId);
-      expect(driverTips).toBeNull();
-    });
-
-    it("should handle errors thrown by DynamoDB", async () => {
-      const driverId = "test-driver-3";
-      const expectedError = new Error("error occured");
-
-      const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
-      mockGet.mockReturnValue({
-        promise: jest.fn().mockRejectedValue(new Error("error occured")),
-      });
-
-      await expect(getDriverTips(driverId)).rejects.toThrow(expectedError);
-    });
-  });
-  describe("storeDriverTip", () => {
-    it("should update daily and weekly tips if the event is from today and this week", async () => {
-      const driverTipEvent: DriverTipEvent = {
+    it("should update throw error if any error occurs", async () => {
+      const DriverTip: DriverTip = {
         driverId: "123",
         amount: "10",
-        eventTime: new Date().toISOString(),
-      };
-
-      const expectedParams = {
-        TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { driverId: "123" },
-        UpdateExpression:
-          "SET lastUpdatedTimestamp = :eventTime, todayTips = if_not_exists(todayTips, :zero) + :todayAmount, weeklyTips = if_not_exists(weeklyTips, :zero) + :weeklyAmount",
-        ExpressionAttributeValues: {
-          ":eventTime": driverTipEvent.eventTime,
-          ":todayAmount": 10,
-          ":weeklyAmount": 10,
-          ":zero": 0,
-        },
-      };
-      await storeDriverTip(driverTipEvent);
-
-      expect(
-        DynamoDBClient.getInstance().getClient().update
-      ).toHaveBeenCalledWith(expectedParams);
-    });
-
-    it("should update throw error if any error occurs", async () => {
-      const driverTipEvent: DriverTipEvent = {
-        driverId: "123",
-        amount: "10",
-        eventTime: new Date("2025-04-04").toISOString(),
+        eventTime: "2022-04-04"
       };
       const expectedError = new Error("error occured");
 
-      const mockUpdate = DynamoDBClient.getInstance().getClient()
-        .update as jest.Mock;
-      mockUpdate.mockReturnValue({
-        promise: jest.fn().mockRejectedValue(new Error("error occured")),
+      const mockPut = DynamoDBClient.getInstance().getClient().put as jest.Mock;
+      mockPut.mockReturnValue({
+        promise: jest.fn().mockRejectedValue(new Error("error occured"))
       });
 
-      await expect(storeDriverTip(driverTipEvent)).rejects.toThrow(
-        expectedError
-      );
-    });
-  });
-
-  describe("resetDriverTip", () => {
-    it("should reset todayTips field in database", async () => {
-      const driverId = "123";
-      const currentDate = new Date(); // get the current date timestamp
-      const previousDate = new Date(
-        currentDate.getTime() - 24 * 60 * 60 * 1000
-      );
-      const lastUpdatedTimestamp = previousDate.toISOString();
-
-      const expectedParams = {
-        TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { driverId: "123" },
-        UpdateExpression: "SET todayTips = :value",
-        ExpressionAttributeValues: { ":value": 0 },
-      };
-
-      const mockUpdate = DynamoDBClient.getInstance().getClient()
-        .update as jest.Mock;
-      mockUpdate.mockReturnValue({
-        promise: jest.fn().mockResolvedValue("resolve"),
-      });
-      await resetDriverTip(driverId, lastUpdatedTimestamp);
-
-      expect(
-        DynamoDBClient.getInstance().getClient().update
-      ).toHaveBeenCalledWith(expectedParams);
-    });
-
-    it("should reset weeklyTips field in database", async () => {
-      const driverId = "123";
-      const startOfCurrentWeekTimestamp =
-        new Date(new Date().setUTCHours(0, 0, 0, 0)).getTime() -
-        new Date().getUTCDay() * 24 * 60 * 60 * 1000;
-
-      const oneDayBeforeStartOfCurrentWeek = new Date(
-        startOfCurrentWeekTimestamp - 24 * 60 * 60 * 1000
-      );
-      const lastUpdatedTimestamp = oneDayBeforeStartOfCurrentWeek.toISOString();
-
-      const expectedParamsTodayTips = {
-        TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { driverId: "123" },
-        UpdateExpression: "SET todayTips = :value",
-        ExpressionAttributeValues: { ":value": 0 },
-      };
-      const expectedParamsWeeklyTips = {
-        TableName: DRIVER_TIPS_TABLE_NAME,
-        Key: { driverId: "123" },
-        UpdateExpression: "SET weeklyTips = :value",
-        ExpressionAttributeValues: { ":value": 0 },
-      };
-
-      const mockUpdate = DynamoDBClient.getInstance().getClient()
-        .update as jest.Mock;
-      mockUpdate.mockReturnValue({
-        promise: jest.fn().mockResolvedValue("resolve"),
-      });
-      await resetDriverTip(driverId, lastUpdatedTimestamp);
-
-      expect(DynamoDBClient.getInstance().getClient().update).toBeCalledTimes(
-        2
-      );
-      expect(
-        DynamoDBClient.getInstance().getClient().update
-      ).toHaveBeenCalledWith(expectedParamsTodayTips);
-
-      expect(
-        DynamoDBClient.getInstance().getClient().update
-      ).toHaveBeenCalledWith(expectedParamsWeeklyTips);
-    });
-
-    it("should update throw error if any error occurs", async () => {
-      const driverId = "123";
-      const currentDate = new Date(); // get the current date timestamp
-      const previousDate = new Date(
-        currentDate.getTime() - 24 * 60 * 60 * 1000
-      );
-      const lastUpdatedTimestamp = previousDate.toISOString();
-
-      const expectedError = new Error("error occured");
-
-      const mockUpdate = DynamoDBClient.getInstance().getClient()
-        .update as jest.Mock;
-      mockUpdate.mockReturnValue({
-        promise: jest.fn().mockRejectedValue(new Error("error occured")),
-      });
-
-      await expect(
-        resetDriverTip(driverId, lastUpdatedTimestamp)
-      ).rejects.toThrow(expectedError);
+      await expect(storeDriverTip(DriverTip)).rejects.toThrow(expectedError);
     });
   });
 });

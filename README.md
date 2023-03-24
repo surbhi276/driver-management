@@ -81,5 +81,3 @@ To remove the traces of this application on your AWS account make sure you clean
 ```
 yarn destroy
 ```
-
-temp-test changes

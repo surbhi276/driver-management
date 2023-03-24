@@ -1,6 +1,5 @@
 import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
-import { getDriver } from "../../repositories/driver/driver.repository";
 import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
 import { Logger } from "../../shared/logger/logger";
 
@@ -15,28 +14,25 @@ export const handleGetDriverTips = async (
     logger.error("Invalid input");
     return {
       statusCode: 400,
-      body: "path parameter missing",
+      body: "path parameter missing"
     };
   }
 
   try {
-    const driver = await getDriver(driverId);
     const driverTips = await getDriverTips(driverId);
-    logger.info(
-      `successfully fetched driver and driver tips data ${driver} ${driverTips}`
-    );
-    const driverTipsResult = JSON.stringify({ ...driver, ...driverTips });
+    logger.info(`successfully fetched driver tips data ${driverTips}`);
+    const driverTipsResult = JSON.stringify(driverTips);
     return {
       statusCode: 200,
-      body: driverTipsResult,
+      body: driverTipsResult
     };
   } catch (error) {
     logger.error("Error occured while getting drivers tips", error);
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Failed to get drivers tips",
-      }),
+        message: "Failed to get drivers tips"
+      })
     };
   }
 };

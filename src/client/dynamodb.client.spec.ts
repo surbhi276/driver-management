@@ -2,6 +2,13 @@ import { DynamoDB } from "aws-sdk";
 
 import { DynamoDBClient } from "./dynamodb.client";
 
+// Mock DynamoDB.DocumentClient
+jest.mock("aws-sdk", () => ({
+  DynamoDB: {
+    DocumentClient: jest.fn(),
+  },
+}));
+
 describe("DynamoDBClient", () => {
   describe("getInstance", () => {
     it("should return an instance of DynamoDBClient", () => {

@@ -1,32 +1,15 @@
 import type { APIGatewayProxyResult, SQSEvent } from "aws-lambda";
 
-import type { DriverTotalTips } from "../../models/driverTips";
-
 import { handleStoreDriverTip } from "./storeDriverTip.handler";
 
-import { DriverTipEvent } from "../../models/driverTips";
-import {
-  getDriverTips,
-  resetDriverTip,
-  storeDriverTip,
-} from "../../repositories/driverTips/driverTips.repository";
+import { DriverTip } from "../../models/driverTips";
+import { storeDriverTip } from "../../repositories/driverTips/driverTips.repository";
 
 jest.mock("../../repositories/driverTips/driverTips.repository");
 
 storeDriverTip as jest.MockedFunction<typeof storeDriverTip>;
-getDriverTips as jest.MockedFunction<typeof getDriverTips>;
-resetDriverTip as jest.MockedFunction<typeof resetDriverTip>;
 
 describe("handleStoreDriverTip", () => {
-  const mockDriverTips: DriverTotalTips = {
-    driverId: "1234",
-    todayTips: 12,
-    weeklyTips: 13,
-    lastUpdatedTimestamp: new Date().toISOString(),
-  };
-  (getDriverTips as jest.Mock).mockResolvedValue(mockDriverTips);
-  (resetDriverTip as jest.Mock).mockResolvedValue("resolve");
-
   beforeEach(() => {
     // Clear all mock calls before each test
     jest.clearAllMocks();
@@ -39,10 +22,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "abcd",
             amount: "12",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
 
     const result = await handleStoreDriverTip(event);
@@ -57,10 +40,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "Nan",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
 
     const result = await handleStoreDriverTip(event);
@@ -75,10 +58,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "13",
-            eventTime: "2019/09/16",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019/09/16"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
 
     const result = await handleStoreDriverTip(event);
@@ -93,17 +76,17 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
         },
         {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
 
     await handleStoreDriverTip(event);
@@ -117,15 +100,15 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
 
     const expectedResponse: APIGatewayProxyResult = {
       statusCode: 500,
-      body: JSON.stringify({ message: "Driver tips get stored successfully" }),
+      body: JSON.stringify({ message: "Driver tips get stored successfully" })
     };
     const result = await handleStoreDriverTip(event);
     console.log(result);
@@ -142,10 +125,10 @@ describe("handleStoreDriverTip", () => {
           body: JSON.stringify({
             driverId: "275d7bb8-3a2f-432c-8435-5a01c64ca6ba",
             amount: "12",
-            eventTime: "2019-09-16T10:58:14.651Z",
-          } as DriverTipEvent),
-        },
-      ],
+            eventTime: "2019-09-16T10:58:14.651Z"
+          } as DriverTip)
+        }
+      ]
     } as SQSEvent;
     const result = await handleStoreDriverTip(event);
     expect(result.statusCode).toEqual(500);

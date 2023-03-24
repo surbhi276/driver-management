@@ -33,15 +33,21 @@ The driver service has been extended to keep tracks of the tips received by each
    - Created another lambda which fetches the tips information from the newly created DynamoDB table.
    - Added a new API endpoint to present the tips information of the driver (/tips).
 3. Write Unit tests for the handlers.
-   - Added unit test cases and enabled the project and it's functionalities to be tested in development environment.
+   - Added unit test cases to enable it's functionalities to be tested in development environment.
 4. Improve code quality:
-   - List of flaws I found in the given code and how I resolved it:
+   - creates a singleton instance of the DynamoDB.DocumentClient class, which can be accessed and reused by application. It will minimize the number of AWS SDK connections.
+   - Added Joi validation to improve the data quality. It will help to ensure that the data being processed by the application is of the expected format and type.
+   - Implemented logger to better debug the application.
+   - Changed the code structure of the application into smaller, self-contained components with each module responsible for a specific set of functions or features in order to have a clean code architecture. It has several benefits such as
+     - Easy to maintain : Each module can be updated or modified independently without affecting other parts of the application to promote seperation of concern.
+     - Code reusability : By breaking the application into modules, developers can reuse code across different parts of the application. This will ensure less redundency and more consistency in the code.
+     - Easier testing : Each module can be tested independently, making it easier to identify and fix bugs or issues.
+     - Clean structure : Modularity provides a clear structure for the application, with each module responsible for a specific set of functions or features. This makes it easier for developers to understand the overall architecture of the application and to navigate the codebase.
 5. Explain your decisions in regards to the vision you had for the project.
+   - dsfsdf
 
-## Additional improvements done in the project:
+## Improvements:
 
-- Introduced validation on incoming request(s).
-- Added logging functionality to make the debugging easier.
 - Updated the folders structure, like below screenshot: <br>
   <img width="267" alt="cdk" src="https://user-images.githubusercontent.com/25278823/227360530-d7031373-2b1b-4bb7-94b1-14e17930e645.png"> <br>
   <img width="368" alt="src" src="https://user-images.githubusercontent.com/25278823/227382762-d366c153-15e1-4a14-845f-59d89572f347.png">

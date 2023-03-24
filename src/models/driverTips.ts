@@ -1,12 +1,11 @@
-export interface DriverTipEvent {
+export interface DriverTip {
   driverId: string;
   amount: string;
   eventTime: string;
 }
 
-export interface DriverTotalTips {
+export interface DriverReceivedTips {
   driverId: string;
   todayTips: number;
   weeklyTips: number;
-  lastUpdatedTimestamp: string;
 }
