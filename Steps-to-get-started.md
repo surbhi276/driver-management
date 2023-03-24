@@ -45,4 +45,3 @@ The driver service has been extended to keep tracks of the tips received by each
 - Updated the folders structure, like below screenshot: <br>
   <img width="267" alt="cdk" src="https://user-images.githubusercontent.com/25278823/227360530-d7031373-2b1b-4bb7-94b1-14e17930e645.png"> <br>
   <img width="368" alt="src" src="https://user-images.githubusercontent.com/25278823/227382762-d366c153-15e1-4a14-845f-59d89572f347.png">
-
