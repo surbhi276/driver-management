@@ -44,7 +44,10 @@ The driver service has been extended to keep tracks of the tips received by each
      - Easier testing : Each module can be tested independently, making it easier to identify and fix bugs or issues.
      - Clean structure : Modularity provides a clear structure for the application, with each module responsible for a specific set of functions or features. This makes it easier for developers to understand the overall architecture of the application and to navigate the codebase.
 5. Explain your decisions in regards to the vision you had for the project.
-   - dsfsdf
+   - As the challenge was to keep the track of tips received by drivers and exposing an API to access the aggregated amount of tips received by a driver on a daily and weekly level. The tipping events are available via an SQS queue, and the task is to consume tipping events and store the information in a suitable way.
+   - To accomplish this, I created a new DynamoDB table to store the tips received by drivers. The table could have a primary key of the driver ID and a sort key of the event timestamp of the tipping event. Each tipping event could be stored as a new item in the table, with the driver ID and tip amount as attributes. To calculate the aggregated amount of tips received by a driver on a daily and weekly level, I used the DynamoDB query operation to retrieve all items with a specific driver ID and timestamp within a specific time range, and then calculate the sum of the tip amounts.
+   - Regarding the decision to make the handlers testable, I tried to seperate the data access layer from the business logic layer to make the handlers more testable.
+   - As for improving the existing code,I tried to follow the best practices and coding standards for TypeScript and refactor the code as much as possible to make it more modular and maintainable.
 
 ## Improvements:
 
