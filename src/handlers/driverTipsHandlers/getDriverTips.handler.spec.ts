@@ -3,14 +3,15 @@ import { APIGatewayEvent } from "aws-lambda";
 import { handleGetDriverTips } from "./getDriverTips.handler";
 
 import { DriverReceivedTips } from "../../models/driverTips";
-import { getDriverTips } from "../../repositories/driverTips/driverTips.repository";
+import { getDriverTipsWithinRange } from "../../repositories/driverTips/driverTips.repository";
 
 jest.mock("../../repositories/driver/driver.repository");
 jest.mock("../../repositories/driverTips/driverTips.repository");
 
-const mockGetDriverTips = getDriverTips as jest.MockedFunction<
-  typeof getDriverTips
->;
+const mockGetDriverTipsWithinRange =
+  getDriverTipsWithinRange as jest.MockedFunction<
+    typeof getDriverTipsWithinRange
+  >;
 
 describe("handleGetDriverTips", () => {
   beforeEach(() => {
@@ -23,16 +24,16 @@ describe("handleGetDriverTips", () => {
     const mockDriverTips: DriverReceivedTips = {
       driverId: "1234",
       todayTips: 12,
-      weeklyTips: 13
+      weeklyTips: 13,
     };
 
     const expectedOutput = {
       driverId: "1234",
       todayTips: 12,
-      weeklyTips: 13
+      weeklyTips: 13,
     };
 
-    mockGetDriverTips.mockResolvedValue(mockDriverTips);
+    mockGetDriverTipsWithinRange.mockResolvedValue(mockDriverTips);
 
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent
@@ -67,7 +68,7 @@ describe("handleGetDriverTips", () => {
   it("should return a 500 response with error message", async () => {
     const event = { pathParameters: { id: "1233" } };
 
-    mockGetDriverTips.mockRejectedValue(new Error("Error Occured"));
+    mockGetDriverTipsWithinRange.mockRejectedValue(new Error("Error Occured"));
 
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent

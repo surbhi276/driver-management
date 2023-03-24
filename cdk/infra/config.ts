@@ -71,19 +71,19 @@ export const driverTableConfig = {
 export const driverTipsTableConfig = {
   id: "Driver-Tipping-mgmt-table",
   tableName: "challenge-cloud-native-driver-tip-mgmt-ts",
-  partitionKey: "driverId",
+  partitionKey: "id",
 };
 
 export const driverTestEventsConfig = {
   id: "test-data-driver-rule",
   ruleName: "driver-test-data-scheduler-rule",
-  enabled: false,
+  enabled: true,
 };
 
 export const driverTipsTestEventsConfig = {
   id: "test-data-tips-rule",
   ruleName: "tips-test-data-scheduler-rule",
-  enabled: false,
+  enabled: true,
 };
 
 export const driverApiConfig = {
