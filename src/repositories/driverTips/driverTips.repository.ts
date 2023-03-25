@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TIPS_TABLE_NAME } from "../../config";
 import { DriverTip } from "../../models/driverTips";
@@ -20,9 +18,9 @@ export const getDriverTipsWithinRange = async (
       FilterExpression: "driverId = :id AND eventTime >= :dateValue",
       ExpressionAttributeValues: {
         ":id": id,
-        ":dateValue": dateValue,
+        ":dateValue": dateValue
       },
-      ProjectionExpression: "amount",
+      ProjectionExpression: "amount"
     };
 
     const { Items } = await dynamodbClient.scan(params).promise();
@@ -50,8 +48,8 @@ export const storeDriverTip = async (driverTip: DriverTip): Promise<void> => {
           id,
           driverId,
           amount,
-          eventTime,
-        },
+          eventTime
+        }
       })
       .promise();
   } catch (err) {

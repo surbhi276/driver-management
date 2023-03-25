@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/unbound-method */
+
 import { DynamoDBClient } from "../../client/dynamodb.client";
 import { DRIVER_TIPS_TABLE_NAME } from "../../config";
 
 import {
   getDriverTipsWithinRange,
-  storeDriverTip,
+  storeDriverTip
 } from "./driverTips.repository";
 
 import type { DriverTip } from "../../models/driverTips";
@@ -13,16 +14,16 @@ jest.mock("aws-sdk", () => {
   const mDynamoDB = {
     put: jest.fn().mockReturnThis(),
     scan: jest.fn().mockReturnThis(),
-    promise: jest.fn(),
+    promise: jest.fn()
   };
   const mDocumentClient = {
     put: jest.fn(() => mDynamoDB),
-    scan: jest.fn(() => mDynamoDB),
+    scan: jest.fn(() => mDynamoDB)
   };
   return {
     DynamoDB: {
-      DocumentClient: jest.fn(() => mDocumentClient),
-    },
+      DocumentClient: jest.fn(() => mDocumentClient)
+    }
   };
 });
 
@@ -30,13 +31,13 @@ describe("DriverTips", () => {
   const mockPut = DynamoDBClient.getInstance().getClient().put as jest.Mock;
   const mockPutPromise = jest.fn();
   mockPut.mockReturnValue({
-    promise: mockPutPromise,
+    promise: mockPutPromise
   });
 
   const mockScan = DynamoDBClient.getInstance().getClient().scan as jest.Mock;
   const mockScanPromise = jest.fn();
   mockScan.mockReturnValue({
-    promise: mockScanPromise,
+    promise: mockScanPromise
   });
 
   beforeEach(() => {
@@ -52,14 +53,14 @@ describe("DriverTips", () => {
           id: "123",
           driverId: "123",
           amount: "10",
-          eventTime: "2021-04-04",
-        },
+          eventTime: "2021-04-04"
+        }
       ];
       const mockParams = {
         TableName: DRIVER_TIPS_TABLE_NAME,
         FilterExpression: "driverId = :id AND eventTime >= :dateValue",
         ExpressionAttributeValues: { ":id": "123", ":dateValue": "2022-04-04" },
-        ProjectionExpression: "amount",
+        ProjectionExpression: "amount"
       };
       mockScanPromise.mockResolvedValue({ Items: driverTips });
 
@@ -76,7 +77,7 @@ describe("DriverTips", () => {
         TableName: DRIVER_TIPS_TABLE_NAME,
         FilterExpression: "driverId = :id AND eventTime >= :dateValue",
         ExpressionAttributeValues: { ":id": "123", ":dateValue": "2022-04-04" },
-        ProjectionExpression: "amount",
+        ProjectionExpression: "amount"
       };
 
       mockScanPromise.mockResolvedValue({ Items: null });
@@ -104,12 +105,12 @@ describe("DriverTips", () => {
         id: "123",
         driverId: "123",
         amount: "10",
-        eventTime: "2021-04-04",
+        eventTime: "2021-04-04"
       };
       await storeDriverTip(driverTip);
       expect(mockPut).toHaveBeenCalledWith({
         TableName: DRIVER_TIPS_TABLE_NAME,
-        Item: driverTip,
+        Item: driverTip
       });
     });
 
@@ -118,7 +119,7 @@ describe("DriverTips", () => {
         id: "123",
         driverId: "123",
         amount: "10",
-        eventTime: "2022-04-04",
+        eventTime: "2022-04-04"
       };
       const expectedError = new Error("error occured");
 

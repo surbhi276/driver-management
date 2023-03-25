@@ -11,17 +11,17 @@ jest.mock("aws-sdk", () => {
     put: jest.fn().mockReturnThis(),
     get: jest.fn().mockReturnThis(),
     scan: jest.fn().mockReturnThis(),
-    promise: jest.fn(),
+    promise: jest.fn()
   };
   const mDocumentClient = {
     put: jest.fn(() => mDynamoDB),
     get: jest.fn(() => mDynamoDB),
-    scan: jest.fn(() => mDynamoDB),
+    scan: jest.fn(() => mDynamoDB)
   };
   return {
     DynamoDB: {
-      DocumentClient: jest.fn(() => mDocumentClient),
-    },
+      DocumentClient: jest.fn(() => mDocumentClient)
+    }
   };
 });
 
@@ -32,19 +32,19 @@ describe("driver repository", () => {
   const mockGet = DynamoDBClient.getInstance().getClient().get as jest.Mock;
   const mockGetPromise = jest.fn();
   mockGet.mockReturnValue({
-    promise: mockGetPromise,
+    promise: mockGetPromise
   });
 
   const mockScan = DynamoDBClient.getInstance().getClient().scan as jest.Mock;
   const mockScanPromise = jest.fn();
   mockScan.mockReturnValue({
-    promise: mockScanPromise,
+    promise: mockScanPromise
   });
   const driver: Driver = {
     id: "1",
     firstname: "John",
     lastname: "Doe",
-    driverLicenseId: "123456",
+    driverLicenseId: "123456"
   };
   beforeEach(() => {
     // Clear all mock calls before each test
@@ -58,7 +58,7 @@ describe("driver repository", () => {
       expect(result).toEqual(driver);
       expect(mockPut).toHaveBeenCalledWith({
         TableName: DRIVER_TABLE_NAME,
-        Item: driver,
+        Item: driver
       });
     });
   });
@@ -76,7 +76,7 @@ describe("driver repository", () => {
       expect(result).toEqual(driver);
       expect(mockGet).toHaveBeenCalledWith({
         TableName: DRIVER_TABLE_NAME,
-        Key: { id: driverId },
+        Key: { id: driverId }
       });
     });
 
@@ -90,7 +90,7 @@ describe("driver repository", () => {
       expect(result).toBeNull();
       expect(mockGet).toHaveBeenCalledWith({
         TableName: DRIVER_TABLE_NAME,
-        Key: { id: driverId },
+        Key: { id: driverId }
       });
     });
   });
@@ -105,7 +105,7 @@ describe("driver repository", () => {
 
       expect(result).toEqual([driver]);
       expect(mockScan).toHaveBeenCalledWith({
-        TableName: DRIVER_TABLE_NAME,
+        TableName: DRIVER_TABLE_NAME
       });
     });
 
@@ -117,7 +117,7 @@ describe("driver repository", () => {
 
       expect(result).toStrictEqual([]);
       expect(mockScan).toHaveBeenCalledWith({
-        TableName: DRIVER_TABLE_NAME,
+        TableName: DRIVER_TABLE_NAME
       });
     });
   });
