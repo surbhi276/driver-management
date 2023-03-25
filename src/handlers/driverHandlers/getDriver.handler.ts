@@ -21,7 +21,7 @@ export const handleGetDriver = async (
   try {
     const driver = await getDriver(id);
 
-    logger.info(`Driver is successfully fetched ${driver}`);
+    logger.info(`Driver is successfully fetched ${JSON.stringify(driver)}`);
 
     return {
       statusCode: 200,

@@ -9,6 +9,8 @@ module.exports = {
     "no-console": "off",
     "no-restricted-syntax": "off",
     "no-await-in-loop": "off",
+    "no-unsafe-member-access": "off",
+    "no-unsafe-argument": "off",
     "import/no-extraneous-dependencies": ["error", { devDependencies: true }],
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/consistent-type-assertions": "off",

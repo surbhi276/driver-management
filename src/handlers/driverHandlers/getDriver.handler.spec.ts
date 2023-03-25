@@ -5,7 +5,6 @@ import { getDriver } from "../../repositories/driver/driver.repository";
 import { handleGetDriver } from "./getDriver.handler";
 
 jest.mock("../../repositories/driver/driver.repository");
-jest.mock("../../shared/logger/logger");
 
 const mockGetDriver = getDriver as jest.MockedFunction<typeof getDriver>;
 
@@ -32,9 +31,7 @@ describe("handleGetDriver", () => {
   it("returns 500 status code when getDriver function throws an error", async () => {
     const event = { pathParameters: { id: "1234" } };
     const error = new Error("Failed to get driver");
-    (getDriver as jest.MockedFunction<typeof getDriver>).mockRejectedValueOnce(
-      error
-    );
+    mockGetDriver.mockRejectedValueOnce(error);
 
     const result = await handleGetDriver(event as unknown as APIGatewayEvent);
 

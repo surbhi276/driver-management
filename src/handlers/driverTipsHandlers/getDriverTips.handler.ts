@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-return */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/restrict-plus-operands */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { APIGatewayEvent, APIGatewayProxyResult } from "aws-lambda";
 
 import { ROUND_OFF_VALUE } from "../../config";
@@ -22,7 +16,7 @@ export const handleGetDriverTips = async (
     logger.error("Invalid input");
     return {
       statusCode: 400,
-      body: "path parameter missing"
+      body: "path parameter missing",
     };
   }
 
@@ -38,45 +32,49 @@ export const handleGetDriverTips = async (
       now.getMonth(),
       now.getDate() - now.getDay()
     ).toISOString();
-    const aggregatedDriverTodaysTips = await getDriverTipsWithinRange(
+    const getTodaysTipsWithinRange = await getDriverTipsWithinRange(
       driverId,
       startOfToday
     );
-    const todayTips =
-      aggregatedDriverTodaysTips?.reduce(
+    const aggregatedtodaysTips =
+      getTodaysTipsWithinRange?.reduce(
         (acc, item) => acc + Number(item.amount),
         0
       ) ?? 0;
 
-    const aggregatedDriverWeeklyTips = await getDriverTipsWithinRange(
+    const getWeeklyTipsWithinRange = await getDriverTipsWithinRange(
       driverId,
       startOfCurrentWeek
     );
-    const weeklyTips =
-      aggregatedDriverWeeklyTips?.reduce(
+    const aggregatedWeeklyTips =
+      getWeeklyTipsWithinRange?.reduce(
         (acc, item) => acc + Number(item.amount),
         0
       ) ?? 0;
-    todayTips.toFixed(2);
+
     const driverReceivedTips: DriverReceivedTips = {
       driverId,
-      todayTips: todayTips.toFixed(ROUND_OFF_VALUE),
-      weeklyTips: weeklyTips.toFixed(ROUND_OFF_VALUE)
+      todayTips: aggregatedtodaysTips.toFixed(ROUND_OFF_VALUE),
+      weeklyTips: aggregatedWeeklyTips.toFixed(ROUND_OFF_VALUE),
     };
 
-    logger.info(`successfully fetched driver tips data ${driverReceivedTips}`);
+    logger.info(
+      `successfully fetched driver tips data ${JSON.stringify(
+        driverReceivedTips
+      )}`
+    );
     const driverTipsResult = JSON.stringify(driverReceivedTips);
     return {
       statusCode: 200,
-      body: driverTipsResult
+      body: driverTipsResult,
     };
   } catch (error) {
     logger.error("Error occured while getting drivers tips", error);
     return {
       statusCode: 500,
       body: JSON.stringify({
-        message: "Failed to get drivers tips"
-      })
+        message: "Failed to get drivers tips",
+      }),
     };
   }
 };

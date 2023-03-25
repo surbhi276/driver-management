@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { APIGatewayEvent } from "aws-lambda";
 
 import { handleGetDriverTips } from "./getDriverTips.handler";
@@ -6,7 +5,6 @@ import { handleGetDriverTips } from "./getDriverTips.handler";
 import { DriverReceivedTips, DriverTip } from "../../models/driverTips";
 import { getDriverTipsWithinRange } from "../../repositories/driverTips/driverTips.repository";
 
-jest.mock("../../repositories/driver/driver.repository");
 jest.mock("../../repositories/driverTips/driverTips.repository");
 
 const mockGetDriverTipsWithinRange =
@@ -27,14 +25,14 @@ describe("handleGetDriverTips", () => {
         id: "123",
         driverId: "1234",
         amount: "20",
-        eventTime: "30"
-      }
+        eventTime: "30",
+      },
     ];
 
     const expectedOutput: DriverReceivedTips = {
       driverId: "1234",
       todayTips: "20.00",
-      weeklyTips: "20.00"
+      weeklyTips: "20.00",
     };
 
     mockGetDriverTipsWithinRange.mockResolvedValue(mockDriverTips);
@@ -42,7 +40,7 @@ describe("handleGetDriverTips", () => {
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent
     );
-    console.log(response);
+
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toStrictEqual(expectedOutput);
   });
@@ -65,8 +63,8 @@ describe("handleGetDriverTips", () => {
         id: "123",
         driverId: "1234",
         amount: "20",
-        eventTime: "30"
-      }
+        eventTime: "30",
+      },
     ];
 
     mockGetDriverTipsWithinRange
@@ -84,7 +82,7 @@ describe("handleGetDriverTips", () => {
     expect(mockGetDriverTipsWithinRange).toBeCalledTimes(2);
   });
 
-  it("should give 500 if any error occurs if getDriverTipsWithinRange fails frist time", async () => {
+  it("should give 500 if any error occurs if getDriverTipsWithinRange fails first time", async () => {
     const event = { pathParameters: { id: "1234" } };
 
     mockGetDriverTipsWithinRange.mockRejectedValueOnce(
@@ -107,7 +105,7 @@ describe("handleGetDriverTips", () => {
     const expectedOutput: DriverReceivedTips = {
       driverId: "1234",
       todayTips: "0.00",
-      weeklyTips: "0.00"
+      weeklyTips: "0.00",
     };
 
     mockGetDriverTipsWithinRange
@@ -117,7 +115,7 @@ describe("handleGetDriverTips", () => {
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent
     );
-    console.log(response);
+
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toStrictEqual(expectedOutput);
   });
@@ -130,14 +128,14 @@ describe("handleGetDriverTips", () => {
         id: "123",
         driverId: "1234",
         amount: "20",
-        eventTime: "30"
-      }
+        eventTime: "30",
+      },
     ];
 
     const expectedOutput: DriverReceivedTips = {
       driverId: "1234",
       todayTips: "20.00",
-      weeklyTips: "0.00"
+      weeklyTips: "0.00",
     };
 
     mockGetDriverTipsWithinRange
@@ -147,7 +145,7 @@ describe("handleGetDriverTips", () => {
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent
     );
-    console.log(response);
+
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toStrictEqual(expectedOutput);
   });
@@ -160,14 +158,14 @@ describe("handleGetDriverTips", () => {
         id: "123",
         driverId: "1234",
         amount: "20",
-        eventTime: "30"
-      }
+        eventTime: "30",
+      },
     ];
 
     const expectedOutput: DriverReceivedTips = {
       driverId: "1234",
       todayTips: "0.00",
-      weeklyTips: "20.00"
+      weeklyTips: "20.00",
     };
 
     mockGetDriverTipsWithinRange
@@ -177,7 +175,7 @@ describe("handleGetDriverTips", () => {
     const response = await handleGetDriverTips(
       event as unknown as APIGatewayEvent
     );
-    console.log(response);
+
     expect(response.statusCode).toBe(200);
     expect(JSON.parse(response.body)).toStrictEqual(expectedOutput);
   });

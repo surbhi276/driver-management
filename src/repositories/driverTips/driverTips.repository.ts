@@ -20,12 +20,11 @@ export const getDriverTipsWithinRange = async (
       FilterExpression: "driverId = :id AND eventTime >= :dateValue",
       ExpressionAttributeValues: {
         ":id": id,
-        ":dateValue": dateValue
+        ":dateValue": dateValue,
       },
-      ProjectionExpression: "amount"
+      ProjectionExpression: "amount",
     };
 
-    console.log(params, "p");
     const { Items } = await dynamodbClient.scan(params).promise();
 
     if (!Items) return null;
@@ -51,8 +50,8 @@ export const storeDriverTip = async (driverTip: DriverTip): Promise<void> => {
           id,
           driverId,
           amount,
-          eventTime
-        }
+          eventTime,
+        },
       })
       .promise();
   } catch (err) {
