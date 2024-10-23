@@ -1,4 +1,3 @@
-# Coding Challenge
 
 # Driver Management Service
 
